@@ -2,9 +2,10 @@ import { Piece } from "./Piece.js";
 import { Board } from "./Board.js";
 
 export default class Game {
-  constructor(width = 10, height = 20) {
+  constructor(width = 10, height = 20, rng) {
     this.board = new Board(width, height);
     this.currentPiece = Piece.spawn(this.board);
+    this.rng = rng;
     this.gameOver = false;
   }
 

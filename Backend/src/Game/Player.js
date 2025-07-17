@@ -1,6 +1,7 @@
 export class Player {
-  constructor(socketId) {
+  constructor(socketId, name = "DefaultPlayer") {
     this.id = socketId;
-    this.game = null;
+    this.name = name;
+    this.room = null;
   }
 }
