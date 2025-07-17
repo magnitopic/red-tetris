@@ -1,5 +1,9 @@
+import { isValidPosition, lockPiece } from "./MovementUtils.js";
+
 export default class TetrisGame {
-  constructor() {
+  constructor(width = 10, height = 20) {
+    this.width = width;
+    this.height = height;
     this.board = this.createEmptyBoard();
     this.currentPiece = this.spawnPiece();
     this.gameOver = false;
@@ -13,7 +17,7 @@ export default class TetrisGame {
     // example: shape "----"
     return {
       shape: [[1, 1, 1, 1]],
-      x: 0,
+      x: Math.floor(this.width / 2) - 2,
       y: 0
     };
   }
@@ -27,20 +31,40 @@ export default class TetrisGame {
   }
 
   moveLeft() {
-    this.currentPiece.x -= 1;
+    const newX = this.currentPiece.x - 1;
+    if (isValidPosition(this.board, newX, this.currentPiece.y, this.currentPiece.shape)) {
+      this.currentPiece.x = newX;
+    }
   }
 
   moveRight() {
-    this.currentPiece.x += 1;
-  }
-
-  rotate() {
-    this.currentPiece.shape = this.currentPiece.shape[0].map((_, i) =>
-      this.currentPiece.shape.map(row => row[i]).reverse()
-    );
+    const newX = this.currentPiece.x + 1;
+    if (isValidPosition(this.board, newX, this.currentPiece.y, this.currentPiece.shape)) {
+      this.currentPiece.x = newX;
+    }
   }
 
   drop() {
-    this.currentPiece.y += 1;
+    const newY = this.currentPiece.y + 1;
+    if (isValidPosition(this.board, this.currentPiece.x, newY, this.currentPiece.shape)) {
+      this.currentPiece.y = newY;
+    } else {
+      this.board =  lockPiece(this.board, this.currentPiece);
+      this.currentPiece = this.spawnPiece();
+
+			// check if new spawn collides
+			if (!isValidPosition(this.board, this.currentPiece.x, this.currentPiece.y, this.currentPiece.shape)) {
+        this.gameOver = true;
+      }
+    }
+  }
+
+  rotate() {
+    const rotatedShape = this.currentPiece.shape[0].map((_, i) =>
+      this.currentPiece.shape.map(row => row[i]).reverse()
+    );
+    if (isValidPosition(this.board, this.currentPiece.x, this.currentPiece.y, rotatedShape)) {
+      this.currentPiece.shape = rotatedShape;
+    }
   }
 }

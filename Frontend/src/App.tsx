@@ -26,6 +26,8 @@ export default function App() {
       console.log("Connected to server");
     });
 
+	socket.emit("start_game", { width: BOARD_WIDTH, height: BOARD_HEIGHT });
+
     socket.on("game_state", (state: GameState) => {
       setGameState(state);
     });
