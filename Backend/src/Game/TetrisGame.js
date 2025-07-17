@@ -22,6 +22,8 @@ export default class TetrisGame {
   }
 
   moveLeft() {
+		if (this.gameOver || !this.currentPiece) return;
+
     const newX = this.currentPiece.x - 1;
     if (isValidPosition(this.board, newX, this.currentPiece.y, this.currentPiece.shape)) {
       this.currentPiece.x = newX;
@@ -29,6 +31,8 @@ export default class TetrisGame {
   }
 
   moveRight() {
+		if (this.gameOver || !this.currentPiece) return;
+
     const newX = this.currentPiece.x + 1;
     if (isValidPosition(this.board, newX, this.currentPiece.y, this.currentPiece.shape)) {
       this.currentPiece.x = newX;
@@ -36,6 +40,8 @@ export default class TetrisGame {
   }
 
   drop() {
+		if (this.gameOver || !this.currentPiece) return;
+
     const newY = this.currentPiece.y + 1;
     if (isValidPosition(this.board, this.currentPiece.x, newY, this.currentPiece.shape)) {
       this.currentPiece.y = newY;
@@ -55,8 +61,7 @@ export default class TetrisGame {
   }
 
   rotate() {
-    if (!this.currentPiece)	
-			return;
+		if (this.gameOver || !this.currentPiece) return;
 
 		const { template, rotation, x, y } = this.currentPiece;
 		const nextRotation = (rotation + 1) % template.rotations.length;
