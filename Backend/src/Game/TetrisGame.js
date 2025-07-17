@@ -1,31 +1,16 @@
-import { isValidPosition, lockPiece } from "./MovementUtils.js";
-import { TETROMINOES } from "./Tetrominoes.js";
+import { isValidPosition, lockPiece, spawnPiece } from "./MovementUtils.js";
 
 export default class TetrisGame {
   constructor(width = 10, height = 20) {
     this.width = width;
     this.height = height;
     this.board = this.createEmptyBoard();
-    this.currentPiece = this.spawnPiece();
+    this.currentPiece = spawnPiece(this.board, this.width);
     this.gameOver = false;
   }
 
   createEmptyBoard() {
-    return Array.from({ length: 20 }, () => Array(10).fill(0));
-  }
-
-  spawnPiece() {
-   	const randomIndex = Math.floor(Math.random() * TETROMINOES.length);
-		const piece = TETROMINOES[randomIndex];
-		const shape = piece.shape.map(row => row.map(cell => cell ? piece.id : 0));
-		const x = Math.floor((this.width - shape[0].length) / 2);
-		const y = 0;
-
-		return {
-			shape,
-			x,
-			y
-		};
+    return Array.from({ length: this.height }, () => Array(this.width).fill(0));
   }
 
   getState() {
@@ -59,21 +44,30 @@ export default class TetrisGame {
       this.board =  lockPiece(this.board, this.currentPiece);
 
 			// Spawn new piece
-      this.currentPiece = this.spawnPiece();
+      this.currentPiece = spawnPiece(this.board, this.width);
 
 			// check if new spawn collides
-			if (!isValidPosition(this.board, this.currentPiece.x, this.currentPiece.y, this.currentPiece.shape)) {
+      if (this.currentPiece === null) {
         this.gameOver = true;
       }
+
     }
   }
 
   rotate() {
-    const rotatedShape = this.currentPiece.shape[0].map((_, i) =>
-      this.currentPiece.shape.map(row => row[i]).reverse()
-    );
-    if (isValidPosition(this.board, this.currentPiece.x, this.currentPiece.y, rotatedShape)) {
-      this.currentPiece.shape = rotatedShape;
-    }
+    if (!this.currentPiece)	
+			return;
+
+		const { template, rotation, x, y } = this.currentPiece;
+		const nextRotation = (rotation + 1) % template.rotations.length;
+
+		const newShape = template.rotations[nextRotation].map(row =>
+			row.map(cell => (cell ? template.id : 0))
+		);
+
+		if (isValidPosition(this.board, x, y, newShape)) {
+			this.currentPiece.rotation = nextRotation;
+			this.currentPiece.shape = newShape;
+		}
   }
 }

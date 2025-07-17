@@ -18,11 +18,11 @@ const BOARD_HEIGHT = 20;
 
 const COLORS: { [key: number]: string } = {
   1: "bg-cyan-500 border-cyan-700",   	// I
-  2: "bg-yellow-400 border-yellow-600", // O
-  3: "bg-purple-500 border-purple-700", // T
-  4: "bg-blue-600 border-blue-700",     // J
-  5: "bg-orange-500 border-orange-700", // L
-  6: "bg-green-500 border-green-700",   // S
+  2: "bg-blue-600 border-blue-700",     // J
+  3: "bg-orange-500 border-orange-700", // L
+  4: "bg-yellow-400 border-yellow-600", // O
+  5: "bg-green-500 border-green-700",   // S
+  6: "bg-purple-500 border-purple-700", // T
   7: "bg-red-500 border-red-700",       // Z
 };
 

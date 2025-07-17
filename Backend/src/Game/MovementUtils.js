@@ -1,3 +1,5 @@
+import { TETROMINOES } from "./Tetrominoes.js";
+
 export function isValidPosition(board, x, y, shape) {
   const width = board[0].length;
   const height = board.length;
@@ -40,4 +42,29 @@ export function lockPiece(board, piece) {
   });
 
   return newBoard;
+}
+
+export function spawnPiece(board, width) {
+  const randomIndex = Math.floor(Math.random() * TETROMINOES.length);
+  const pieceTemplate = TETROMINOES[randomIndex];
+
+  const rotation = 0;
+  const shape = pieceTemplate.rotations[rotation].map(row =>
+    row.map(cell => (cell ? pieceTemplate.id : 0))
+  );
+
+  const x = Math.floor((width - shape[0].length) / 2);
+  const y = 0;
+
+  if (!isValidPosition(board, x, y, shape)) {
+    return null;
+  }
+
+  return {
+    template: pieceTemplate,
+    rotation,
+    shape,
+    x,
+    y,
+  };
 }
