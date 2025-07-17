@@ -12,6 +12,8 @@ import { invalidJSONMiddleware } from '../Middlewares/invalidJSONMiddleware.js';
 import { captureResponseDataMiddleware } from '../Middlewares/captureResponseDataMiddleware.js';
 import { checkAuthStatusMiddleware } from '../Middlewares/checkAuthStatusMiddleware.js';
 
+import createSocketServer from "../Core/GameServer.js";
+
 // Router Imports:
 import AuthRouter from '../Routes/AuthRouter.js';
 import UsersRouter from '../Routes/UsersRouter.js';
@@ -20,6 +22,7 @@ export default class App {
     constructor() {
         this.app = express();
         this.server = createServer(this.app);
+        createSocketServer(this.server);
         this.HOST = process.env.API_HOST ?? 'localhost';
         this.PORT = process.env.API_PORT ?? 3001;
         this.API_VERSION = process.env.API_VERSION;
