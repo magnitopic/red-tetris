@@ -1,4 +1,5 @@
 import { isValidPosition, lockPiece } from "./MovementUtils.js";
+import { TETROMINOES } from "./Tetrominoes.js";
 
 export default class TetrisGame {
   constructor(width = 10, height = 20) {
@@ -14,12 +15,17 @@ export default class TetrisGame {
   }
 
   spawnPiece() {
-    // example: shape "----"
-    return {
-      shape: [[1, 1, 1, 1]],
-      x: Math.floor(this.width / 2) - 2,
-      y: 0
-    };
+   	const randomIndex = Math.floor(Math.random() * TETROMINOES.length);
+		const piece = TETROMINOES[randomIndex];
+		const shape = piece.shape.map(row => row.map(cell => cell ? piece.id : 0));
+		const x = Math.floor((this.width - shape[0].length) / 2);
+		const y = 0;
+
+		return {
+			shape,
+			x,
+			y
+		};
   }
 
   getState() {
@@ -49,7 +55,10 @@ export default class TetrisGame {
     if (isValidPosition(this.board, this.currentPiece.x, newY, this.currentPiece.shape)) {
       this.currentPiece.y = newY;
     } else {
+			// Lock piece
       this.board =  lockPiece(this.board, this.currentPiece);
+
+			// Spawn new piece
       this.currentPiece = this.spawnPiece();
 
 			// check if new spawn collides

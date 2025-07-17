@@ -16,6 +16,16 @@ type GameState = {
 const BOARD_WIDTH = 10;
 const BOARD_HEIGHT = 20;
 
+const COLORS: { [key: number]: string } = {
+  1: "bg-cyan-500 border-cyan-700",   	// I
+  2: "bg-yellow-400 border-yellow-600", // O
+  3: "bg-purple-500 border-purple-700", // T
+  4: "bg-blue-600 border-blue-700",     // J
+  5: "bg-orange-500 border-orange-700", // L
+  6: "bg-green-500 border-green-700",   // S
+  7: "bg-red-500 border-red-700",       // Z
+};
+
 export default function App() {
   const [gameState, setGameState] = useState<GameState | null>(null);
 
@@ -76,16 +86,16 @@ export default function App() {
         className="grid grid-cols-10 gap-0.5 bg-gray-800 p-1 rounded"
         style={{ width: 300, height: 600 }}
       >
-        {boardWithPiece.flat().map((cell, idx) => (
-          <div
-            key={idx}
-            className={`w-7 h-7 ${
-              cell
-                ? "bg-blue-500 border border-blue-700"
-                : "bg-gray-900 border border-gray-700"
-            }`}
-          />
-        ))}
+				{boardWithPiece.flat().map((cell, idx) => (
+					<div
+						key={idx}
+						className={`w-7 h-7 ${
+						cell
+							? `${COLORS[cell] || "bg-white border-white"}`
+							: "bg-gray-900 border border-gray-700"
+						}`}
+					/>
+				))}
       </div>
     </div>
   );

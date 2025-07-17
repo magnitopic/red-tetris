@@ -11,9 +11,9 @@ export function isValidPosition(board, x, y, shape) {
         if (boardX < 0 || boardX >= width || 
             boardY < 0 || boardY >= height) 
         {
-          return false; // Collide with board
+          return false; // Board Collision
         } else if (board[boardY][boardX] !== 0) {
-          return false; // Collide with another piece
+          return false; // Piece Collision
         }
       }
     }
@@ -30,11 +30,8 @@ export function lockPiece(board, piece) {
       if (cell) {
         const y = posY + dy;
         const x = posX + dx;
-        if (
-          y >= 0 &&
-          y < newBoard.length &&
-          x >= 0 &&
-          x < newBoard[0].length
+        if (y >= 0 && y < newBoard.length &&
+            x >= 0 && x < newBoard[0].length
         ) {
           newBoard[y][x] = cell;
         }
