@@ -11,6 +11,7 @@ type GameState = {
     x: number;
     y: number;
   };
+	gameOver : string;
 };
 
 const BOARD_WIDTH = 10;
@@ -36,7 +37,7 @@ export default function App() {
       console.log("Connected to server");
     });
 
-	socket.emit("start_game", { width: BOARD_WIDTH, height: BOARD_HEIGHT });
+		socket.emit("start_game", { width: BOARD_WIDTH, height: BOARD_HEIGHT });
 
     socket.on("game_state", (state: GameState) => {
       setGameState(state);
@@ -64,21 +65,23 @@ export default function App() {
     return <div className="text-center mt-10 text-xl text-gray-500">Loading game...</div>;
   }
 
-  const { board, currentPiece } = gameState;
+  const { board, currentPiece, gameOver } = gameState;
 
   const boardWithPiece = board.map(row => [...row]);
 
-  currentPiece.shape.forEach((row, dy) => {
-    row.forEach((cell, dx) => {
-      if (cell) {
-        const x = currentPiece.x + dx;
-        const y = currentPiece.y + dy;
-        if (y >= 0 && y < BOARD_HEIGHT && x >= 0 && x < BOARD_WIDTH) {
-          boardWithPiece[y][x] = cell;
-        }
-      }
-    });
-  });
+	if (!gameOver && currentPiece) {
+		currentPiece.shape.forEach((row, dy) => {
+			row.forEach((cell, dx) => {
+				if (cell) {
+					const x = currentPiece.x + dx;
+					const y = currentPiece.y + dy;
+					if (y >= 0 && y < BOARD_HEIGHT && x >= 0 && x < BOARD_WIDTH) {
+						boardWithPiece[y][x] = cell;
+					}
+				}
+			});
+		});
+	}
 
   return (
     <div className="flex justify-center mt-8">
@@ -97,6 +100,11 @@ export default function App() {
 					/>
 				))}
       </div>
+			 {gameOver && (
+      <div className="mt-4 text-red-600 text-2xl font-bold">
+        Game Over
+      </div>
+    )}
     </div>
   );
 }

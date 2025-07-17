@@ -1,31 +1,18 @@
-import { isValidPosition, lockPiece, spawnPiece } from "./MovementUtils.js";
+import { Piece } from "./Piece.js";
+import { Board } from "./Board.js";
 
-export default class TetrisGame {
+export default class Game {
   constructor(width = 10, height = 20) {
-    this.width = width;
-    this.height = height;
-    this.board = this.createEmptyBoard();
-    this.currentPiece = spawnPiece(this.board, this.width);
+    this.board = new Board(width, height);
+    this.currentPiece = Piece.spawn(this.board);
     this.gameOver = false;
-  }
-
-  createEmptyBoard() {
-    return Array.from({ length: this.height }, () => Array(this.width).fill(0));
-  }
-
-  getState() {
-    return {
-      board: this.board,
-      currentPiece: this.currentPiece,
-      gameOver: this.gameOver
-    };
   }
 
   moveLeft() {
 		if (this.gameOver || !this.currentPiece) return;
 
     const newX = this.currentPiece.x - 1;
-    if (isValidPosition(this.board, newX, this.currentPiece.y, this.currentPiece.shape)) {
+    if (this.board.isValidPosition(newX, this.currentPiece.y, this.currentPiece.shape)) {
       this.currentPiece.x = newX;
     }
   }
@@ -34,7 +21,7 @@ export default class TetrisGame {
 		if (this.gameOver || !this.currentPiece) return;
 
     const newX = this.currentPiece.x + 1;
-    if (isValidPosition(this.board, newX, this.currentPiece.y, this.currentPiece.shape)) {
+    if (this.board.isValidPosition(newX, this.currentPiece.y, this.currentPiece.shape)) {
       this.currentPiece.x = newX;
     }
   }
@@ -43,18 +30,19 @@ export default class TetrisGame {
 		if (this.gameOver || !this.currentPiece) return;
 
     const newY = this.currentPiece.y + 1;
-    if (isValidPosition(this.board, this.currentPiece.x, newY, this.currentPiece.shape)) {
+    if (this.board.isValidPosition(this.currentPiece.x, newY, this.currentPiece.shape)) {
       this.currentPiece.y = newY;
     } else {
 			// Lock piece
-      this.board =  lockPiece(this.board, this.currentPiece);
+      this.board.lockPiece(this.currentPiece);
 
 			// Spawn new piece
-      this.currentPiece = spawnPiece(this.board, this.width);
+      this.currentPiece = Piece.spawn(this.board);
 
 			// check if new spawn collides
       if (this.currentPiece === null) {
         this.gameOver = true;
+        console.log("Game over!!!")
       }
 
     }
@@ -70,9 +58,17 @@ export default class TetrisGame {
 			row.map(cell => (cell ? template.id : 0))
 		);
 
-		if (isValidPosition(this.board, x, y, newShape)) {
+		if (this.board.isValidPosition(x, y, newShape)) {
 			this.currentPiece.rotation = nextRotation;
 			this.currentPiece.shape = newShape;
 		}
+  }
+
+  getState() {
+    return {
+      board: this.board.getState(),
+      currentPiece: this.currentPiece,
+      gameOver: this.gameOver
+    };
   }
 }
