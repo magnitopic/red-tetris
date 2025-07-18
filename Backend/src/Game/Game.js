@@ -50,7 +50,7 @@ export default class Game {
     this.onStateChange?.();
   }
 
-  hardDrop() {
+  async hardDrop() {
     if (this.gameOver || !this.currentPiece) return;
 
     while (true) {
@@ -58,6 +58,10 @@ export default class Game {
 
       if (this.board.isValidPosition(this.currentPiece.x, newY, this.currentPiece.shape)) {
         this.currentPiece.y = newY;
+
+        await new Promise(resolve => setTimeout(resolve, 40)); // 40 ms
+        this.onStateChange?.();
+
       } else {
         // Lock piece
         this.board.lockPiece(this.currentPiece);
