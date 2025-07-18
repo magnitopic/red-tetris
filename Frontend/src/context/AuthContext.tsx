@@ -16,11 +16,6 @@ interface AuthContextType {
 	login: (data: LoginData) => Promise<AuthResponse>;
 	logout: () => Promise<AuthResponse>;
 	oauth: (token: string, provider: string) => Promise<AuthResponse>;
-	confirmEmail: (token: string) => Promise<AuthResponse>;
-	resetPassword: (
-		token: string,
-		new_password: string
-	) => Promise<AuthResponse>;
 	refreshUserData: () => Promise<void>;
 }
 
@@ -102,32 +97,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 		return response;
 	};
 
-	const confirmEmail = async (code: string): Promise<AuthResponse> => {
-		try {
-			await authApi.confirmEmail(code);
-			const status = await authApi.checkAuth();
-			setUser(status.user);
-			setIsAuthenticated(true);
-			return {
-				success: true,
-				message: "Email confirmed",
-				user: status.user,
-			};
-		} catch (error: any) {
-			return {
-				success: false,
-				message: error.message || "Email confirmation failed",
-			};
-		}
-	};
-
-	const resetPassword = async (
-		token: string,
-		new_password: string
-	): Promise<AuthResponse> => {
-		return await authApi.resetPassword(token, new_password);
-	};
-
 	const refreshUserData = async (): Promise<void> => {
 		try {
 			// First check if user is still authenticated
@@ -166,8 +135,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 				login,
 				logout,
 				oauth,
-				confirmEmail,
-				resetPassword,
 				refreshUserData,
 			}}
 		>

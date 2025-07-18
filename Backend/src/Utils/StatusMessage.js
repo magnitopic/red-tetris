@@ -11,14 +11,9 @@ export default class StatusMessage {
         'The username you entered does not exist. Please try again.';
     static ALREADY_LOGGED_IN = 'Already logged in.';
     static ACCESS_NOT_AUTHORIZED = 'Access not authorized.';
-    static DUPLICATE_USERNAME_OR_EMAIL = 'Username or email already in use.';
+
     static DUPLICATE_USERNAME = 'Username already in use.';
-    static DUPLICATE_EMAIL = 'Email already in use.';
     static LOGOUT_SUCCESS = 'Logout successful!';
-    static ACC_CONFIRMATION_REQUIRED =
-        'Please confirm your account before sign in. A confirmation link was sent to your email.';
-    static CONFIRM_ACC_TOKEN_EXPIRED =
-        'The token to confirm the account expired. A new one has been sent to your email.';
     static ACC_SUCCESSFULLY_CONFIRMED =
         'Your account has been successfully confirmed!';
     static REFRESH_TOKEN_EXPIRED =
@@ -26,8 +21,7 @@ export default class StatusMessage {
     static REFRESH_TOKEN_REVOKED =
         'Refresh token was revoked. Please log in again.';
     static ACC_ALREADY_CONFIRMED = 'Account has already being confirmed.';
-    static INVALID_EMAIL = 'No account found with this email address.';
-    static RESET_PASS_EMAIL_SENT = 'Reset password email sent.';
+
     static CONFIRM_ACC_FIRST =
         'Please confirm your account before trying to reset your password.';
     static RESET_PASS_TOKEN_EXPIRED = 'The reset password link has expired.';
@@ -43,8 +37,6 @@ export default class StatusMessage {
     static INVALID_JSON = 'Invalid JSON payload.';
     static CANNOT_CHANGE_PASS =
         'Your account is linked to 42 School. Please manage your password on their site.';
-    static CANNOT_CHANGE_EMAIL =
-        'Your account is linked to 42 School. Please manage your email on their site.';
     static CANNOT_LOGIN_WITH_PASS =
         'Your account is linked to 42 School. Please login with your 42 School account.';
     static CANNOT_EDIT_OTHER_PROFILE =

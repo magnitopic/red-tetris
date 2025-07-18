@@ -74,18 +74,18 @@ export async function loginValidations(reqBody, res) {
 
     if (!user.password)
         return res
-            .status(403)
-            .json({ msg: StatusMessage.CANNOT_LOGIN_WITH_PASS });
-
+    .status(403)
+    .json({ msg: StatusMessage.CANNOT_LOGIN_WITH_PASS });
+    
     // Validates password
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword)
         return res.status(401).json({ msg: StatusMessage.WRONG_PASSWORD });
 
-    if (!user.active_account)
+    /* if (!user.active_account) TODO: delete?
         return res
             .status(403)
-            .json({ msg: StatusMessage.ACC_CONFIRMATION_REQUIRED });
+            .json({ msg: StatusMessage.ACC_CONFIRMATION_REQUIRED }); */
 
     // Returns user
     return { user };

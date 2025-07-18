@@ -19,8 +19,6 @@ const disallowedUsernames = [
     'blocked-users',
 ];
 
-const acceptedLanguages = ['en', 'es', 'de'];
-
 const userSchema = z.object({
     username: z
         .string({
