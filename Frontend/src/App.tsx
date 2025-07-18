@@ -37,7 +37,15 @@ export default function App() {
       console.log("Connected to server");
     });
 
-		socket.emit("start_game", { width: BOARD_WIDTH, height: BOARD_HEIGHT });
+    
+		socket.emit("join_room", { room: "room123", playerName: "Alex", BOARD_WIDTH, BOARD_HEIGHT});
+
+    socket.on("joined_room", ({ host, players}) => {
+      console.log(`Is host: ${host}`);
+      console.log(`Current players: ${players}`);
+    });
+
+    socket.emit("start_game");
 
     socket.on("game_state", (state: GameState) => {
       setGameState(state);
@@ -49,8 +57,9 @@ export default function App() {
       if (e.key === "ArrowLeft") socket.emit("move_left");
       if (e.key === "ArrowRight") socket.emit("move_right");
       if (e.key === "ArrowUp") socket.emit("rotate");
-      if (e.key === "ArrowDown") socket.emit("drop");
-	  if (e.key === "Escape") socket.disconnect();
+      if (e.key === "ArrowDown") socket.emit("soft_drop");
+      if (e.key === " ") socket.emit("hard_drop"); 
+	    if (e.key === "Escape") socket.disconnect();
     };
 
     window.addEventListener("keydown", onKeyDown);

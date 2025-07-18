@@ -23,7 +23,7 @@ export class Piece {
 
     
     if (!boardInstance.isValidPosition(x, y, shape)) {
-        return null;
+      return null;
     }
 
     return new Piece(pieceTemplate, rotation, shape, x, y);

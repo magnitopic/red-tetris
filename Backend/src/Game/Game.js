@@ -2,11 +2,12 @@ import { Piece } from "./Piece.js";
 import { Board } from "./Board.js";
 
 export default class Game {
-  constructor(width = 10, height = 20, rng) {
+  constructor(width = 10, height = 20, rng, onStateChange) {
     this.board = new Board(width, height);
     this.currentPiece = Piece.spawn(this.board);
     this.rng = rng;
     this.gameOver = false;
+    this.onStateChange = onStateChange;
   }
 
   moveLeft() {
@@ -27,7 +28,7 @@ export default class Game {
     }
   }
 
-  drop() {
+  softDrop() {
 		if (this.gameOver || !this.currentPiece) return;
 
     const newY = this.currentPiece.y + 1;
@@ -45,7 +46,33 @@ export default class Game {
         this.gameOver = true;
         console.log("Game over!!!")
       }
+    }
+    this.onStateChange?.();
+  }
 
+  hardDrop() {
+    if (this.gameOver || !this.currentPiece) return;
+
+    while (true) {
+      const newY = this.currentPiece.y + 1;
+
+      if (this.board.isValidPosition(this.currentPiece.x, newY, this.currentPiece.shape)) {
+        this.currentPiece.y = newY;
+      } else {
+        // Lock piece
+        this.board.lockPiece(this.currentPiece);
+        
+        // Spawn new piece
+        this.currentPiece = Piece.spawn(this.board);
+        
+        // check if new spawn collides
+        if (this.currentPiece === null) {
+          this.gameOver = true;
+          console.log("Game over!!!")
+        }
+        break;
+      }
+      //await new Promise(resolve => setTimeout(resolve, 30));
     }
   }
 
@@ -65,11 +92,24 @@ export default class Game {
 		}
   }
 
+  startGravity(speed = 500) {
+  if (this.gravityInterval) return;
+
+  this.gravityInterval = setInterval(() => {
+    if (!this.gameOver) {
+      this.softDrop();
+    } else {
+      clearInterval(this.gravityInterval);
+    }
+  }, speed);
+}
+
   getState() {
     return {
       board: this.board.getState(),
       currentPiece: this.currentPiece,
       gameOver: this.gameOver
+      
     };
   }
 }

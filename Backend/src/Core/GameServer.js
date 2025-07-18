@@ -34,7 +34,9 @@ export default function createSocketServer(httpServer) {
         // Create game with seed
         const seed = Date.now();
         const rng = seedrandom(seed);
-        const game = new Game(width, height, rng);
+        const game = new Game(width, height, rng, () => {
+          io.to(room).emit("game_state", game.getState());
+        });
 
         gameRoom = {
           game,
@@ -100,6 +102,7 @@ export default function createSocketServer(httpServer) {
 
       gameRoom.started = true;
 
+      gameRoom.game.startGravity();
 			io.to(player.room).emit("game_started");
       // Send initial state to all in room
       io.to(player.room).emit("game_state", gameRoom.game.getState());
@@ -109,7 +112,8 @@ export default function createSocketServer(httpServer) {
     socket.on("move_left", () => handlePlayerAction(socket.id, "moveLeft"));
     socket.on("move_right", () => handlePlayerAction(socket.id, "moveRight"));
     socket.on("rotate", () => handlePlayerAction(socket.id, "rotate"));
-    socket.on("drop", () => handlePlayerAction(socket.id, "drop"));
+    socket.on("soft_drop", () => handlePlayerAction(socket.id, "softDrop"));
+    socket.on("hard_drop", () => handlePlayerAction(socket.id, "hardDrop"));
 
     function handlePlayerAction(playerId, action) {
       const player = players.get(playerId);
