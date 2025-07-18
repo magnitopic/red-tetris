@@ -50,6 +50,25 @@ export class Board {
         }
       });
     });
+    // Clean possible complete lines
+    return this.clearLines();
+  }
+
+  clearLines() {
+    let linesCleared = 0;
+
+    for (let y = this.height - 1; y >= 0; y--) {
+      if (this.grid[y].every(cell => cell !== 0)) {
+        // Clean full line
+        this.grid.splice(y, 1);
+        
+        // New empty line on top
+        this.grid.unshift(new Array(this.width).fill(0));
+        linesCleared++;
+        y++;
+      }
+    }
+    return linesCleared;
   }
 
   getState() {
