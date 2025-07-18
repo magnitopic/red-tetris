@@ -125,6 +125,11 @@ const Header: React.FC = () => {
 								<div className="flex gap-4 flex-wrap items-center justify-center">
 									<Link to="/">
 										<button className="text-font-main font-medium btn whitespace-nowrap text-base px-6 py-2 rounded-full hover:bg-secondary-light transition-colors duration-300">
+											Home
+										</button>
+									</Link>
+									<Link to="/play">
+										<button className="text-font-main font-medium btn whitespace-nowrap text-base px-6 py-2 rounded-full hover:bg-secondary-light transition-colors duration-300">
 											Play
 										</button>
 									</Link>
@@ -206,6 +211,11 @@ const Header: React.FC = () => {
 										</div>
 									)}
 									<Link to="/" onClick={handleLinkClick}>
+										<button className="w-full text-left px-4 py-3 rounded-lg hover:bg-primary-monochromatic transition-colors duration-300">
+											Home
+										</button>
+									</Link>
+									<Link to="/play" onClick={handleLinkClick}>
 										<button className="w-full text-left px-4 py-3 rounded-lg hover:bg-primary-monochromatic transition-colors duration-300">
 											Play
 										</button>

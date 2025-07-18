@@ -10,12 +10,13 @@ import Layout from "../components/layout/Layout";
 import Home from "../pages/Home";
 import Game from "../pages/Game";
 import NotFound from "../pages/NotFound";
-import ProtectedRoute from "./ProtectedRoute"; 
+import ProtectedRoute from "./ProtectedRoute";
+import Play from "../pages/Play";
 /* import Login from "../pages/LogIn";
 import Register from "../pages/Register"; */
 
-/* const protectedRoutes = {
-	profileEdit: {
+const protectedRoutes = {
+	/* 	profileEdit: {
 		path: "profile/edit",
 		element: (
 			<ProtectedRoute>
@@ -38,23 +39,28 @@ import Register from "../pages/Register"; */
 				<PublicProfile />
 			</ProtectedRoute>
 		),
-	},
-	game: {
-		path: "game/:id",
+	}, */
+	/* 	game: {
+		path: "game",
 		element: (
 			<ProtectedRoute>
 				<Game />
 			</ProtectedRoute>
 		),
-	},
-}; */
+	}, */
+};
 
 const publicRoutes = {
 	home: {
 		index: true,
 		element: <Home />,
 	},
-/* 	login: {
+
+	play: {
+		path: "play",
+		element: <Play />,
+	},
+	/* 	login: {
 		path: "login",
 		element: <Login />,
 	},
@@ -90,7 +96,7 @@ export const router = createBrowserRouter(
 			element: <Layout />,
 			children: [
 				...Object.values(publicRoutes),
-				/* ...Object.values(protectedRoutes), */
+				...Object.values(protectedRoutes),
 				/* ...Object.values(callbackRoutes), */
 				...Object.values(defaultRoute),
 			],
@@ -109,7 +115,7 @@ export const router = createBrowserRouter(
 
 export const routes = {
 	...publicRoutes,
-	/* ...protectedRoutes, */
+	...protectedRoutes,
 	/* ...callbackRoutes, */
 	...defaultRoute,
 };
