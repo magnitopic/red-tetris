@@ -15,9 +15,9 @@ const StartGame: React.FC = () => {
 				<RegularButton
 					value="Create Game"
 					disabled={false}
-					alternative={true}
-					onClick={() => {
-						// Logic to create a new game
+					callback={() => {
+						// TODO: Logic to create a new game
+						window.location.href = "/game";
 					}}
 				/>
 			</div>
@@ -36,8 +36,9 @@ const StartGame: React.FC = () => {
 					<RegularButton
 						value="Join Game"
 						disabled={false}
+						alternative={true}
 						onClick={() => {
-							// Logic to join the game using gameCode
+							//TODO: Logic to join the game using gameCode
 						}}
 					/>
 				</div>

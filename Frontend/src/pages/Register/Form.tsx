@@ -76,7 +76,7 @@ const Form: React.FC = () => {
 			)}
 			<form
 				onSubmit={submitForm}
-				className="bg-white shadow-md flex flex-col gap-8 p-10 rounded max-w-3xl items-center"
+				className="bg-background-secondary shadow-md flex flex-col gap-8 p-10 rounded max-w-3xl items-center"
 			>
 				<div className="grid grid-cols-2 gap-4 w-full">
 					<Oauth42Button action="Register" disabled={isSubmitting} />

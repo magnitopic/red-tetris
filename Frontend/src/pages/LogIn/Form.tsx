@@ -70,7 +70,7 @@ const LoginForm: React.FC = () => {
 					onClose={() => setMsg(null)}
 				/>
 			)}
-			<div className="bg-white shadow-md p-10 rounded max-w-3xl">
+			<div className="shadow-md p-10 rounded max-w-3xl bg-background-secondary">
 				<form
 					onSubmit={submitForm}
 					className="flex gap-8 flex-col items-center"
@@ -122,7 +122,6 @@ const LoginForm: React.FC = () => {
 						</Link>
 					</p>
 				</div>
-				<ResetPassword />
 			</div>
 		</>
 	);

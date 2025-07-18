@@ -12,8 +12,8 @@ import Game from "../pages/Game";
 import NotFound from "../pages/NotFound";
 import ProtectedRoute from "./ProtectedRoute";
 import Play from "../pages/Play";
-/* import Login from "../pages/LogIn";
-import Register from "../pages/Register"; */
+import Login from "../pages/LogIn";
+import Register from "../pages/Register";
 
 const protectedRoutes = {
 	/* 	profileEdit: {
@@ -60,14 +60,18 @@ const publicRoutes = {
 		path: "play",
 		element: <Play />,
 	},
-	/* 	login: {
+	game: {
+		path: "game",
+		element: <Game />,
+	},
+		login: {
 		path: "login",
 		element: <Login />,
 	},
 	register: {
 		path: "register",
 		element: <Register />,
-	}, */
+	},
 };
 
 /* const callbackRoutes = {
