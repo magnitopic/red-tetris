@@ -59,9 +59,9 @@ export class Board {
 
     for (let y = this.height - 1; y >= 0; y--) {
       if (this.grid[y].every(cell => cell !== 0)) {
-        // Clean full line
+        // Clean complete lines
         this.grid.splice(y, 1);
-        
+
         // New empty line on top
         this.grid.unshift(new Array(this.width).fill(0));
         linesCleared++;
