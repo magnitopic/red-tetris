@@ -82,11 +82,6 @@ export async function loginValidations(reqBody, res) {
     if (!isValidPassword)
         return res.status(401).json({ msg: StatusMessage.WRONG_PASSWORD });
 
-    /* if (!user.active_account) TODO: delete?
-        return res
-            .status(403)
-            .json({ msg: StatusMessage.ACC_CONFIRMATION_REQUIRED }); */
-
     // Returns user
     return { user };
 }

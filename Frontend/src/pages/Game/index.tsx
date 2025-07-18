@@ -7,6 +7,17 @@ import { io } from "socket.io-client";
 const BOARD_WIDTH = 10;
 const BOARD_HEIGHT = 22;
 
+interface GameState {
+	board: number[][];
+	currentPiece: {
+		shape: number[][];
+		x: number;
+		y: number;
+		color: number;
+	} | null;
+	gameOver: boolean;
+}
+
 const COLORS: { [key: number]: string } = {
 	1: "bg-cyan-500 border-cyan-700", // I
 	2: "bg-blue-600 border-blue-700", // J
@@ -29,7 +40,7 @@ const index: React.FC = () => {
 
 		socket.emit("join_room", {
 			room: "room123",
-			playerName: "Alex",
+			playerName: "insertUser", //TODO INSERT user.username,
 			BOARD_WIDTH,
 			BOARD_HEIGHT,
 		});
@@ -72,6 +83,8 @@ const index: React.FC = () => {
 		);
 	}
 
+
+
 	const { board, currentPiece, gameOver } = gameState;
 
 	const boardWithPiece = board.map((row) => [...row]);
@@ -98,7 +111,7 @@ const index: React.FC = () => {
 	return (
 		<div className="flex justify-center mt-8">
 			<div
-				className="grid grid-cols-10 gap-0.5 bg-gray-500 p-1 rounded"
+				className="grid grid-cols-10 gap-0.5 bg-primary-dark p-1 rounded"
 				style={{ width: 300, height: 660 }}
 			>
 				{boardWithPiece.flat().map((cell, idx) => {
@@ -113,7 +126,7 @@ const index: React.FC = () => {
 											"bg-white border-white"
 									  }`
 									: y < 2
-									? "bg-gray-900/10 border border-gray-700/50"
+									? ""
 									: "bg-gray-900 border border-gray-700"
 							}`}
 						/>
