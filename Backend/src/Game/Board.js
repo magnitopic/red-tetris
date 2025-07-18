@@ -1,12 +1,12 @@
 export class Board {
-	constructor(width = 10, height = 20) {
+	constructor(width = 10, height = 22) {
 		this.width = width;
 		this.height = height;
 		this.grid = this.createEmptyBoard();
 	}
 
 	createEmptyBoard() {
-    return Array.from({ length: this.height }, () => Array(this.width).fill(0));
+    return Array.from({ length: this.height}, () => Array(this.width).fill(0));
   }
 
 	reset() {
@@ -20,13 +20,10 @@ export class Board {
           const boardX = x + col;
           const boardY = y + row;
 
-          if (boardX < 0 || boardX >= this.width || 
-							boardY < 0 || boardY >= this.height) 
-					{
+          if (boardX < 0 || boardX >= this.width || boardY >= this.height) 
             return false;
-          } else if (this.grid[boardY][boardX] !== 0) {
+          if (boardY >= 0 && this.grid[boardY][boardX] !== 0)
             return false;
-          }
         }
       }
     }

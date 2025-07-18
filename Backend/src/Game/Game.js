@@ -2,7 +2,7 @@ import { Piece } from "./Piece.js";
 import { Board } from "./Board.js";
 
 export default class Game {
-  constructor(width = 10, height = 20, rng, onStateChange) {
+  constructor(width = 10, height = 22, rng, onStateChange) {
     this.board = new Board(width, height);
     this.currentPiece = Piece.spawn(this.board);
     this.rng = rng;
@@ -54,6 +54,7 @@ export default class Game {
     if (this.gameOver || !this.currentPiece) return;
 
     while (true) {
+      if (!this.currentPiece) return; 
       const newY = this.currentPiece.y + 1;
 
       if (this.board.isValidPosition(this.currentPiece.x, newY, this.currentPiece.shape)) {

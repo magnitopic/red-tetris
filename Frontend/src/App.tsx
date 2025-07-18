@@ -15,7 +15,7 @@ type GameState = {
 };
 
 const BOARD_WIDTH = 10;
-const BOARD_HEIGHT = 20;
+const BOARD_HEIGHT = 22;
 
 const COLORS: { [key: number]: string } = {
   1: "bg-cyan-500 border-cyan-700",   	// I
@@ -95,25 +95,30 @@ export default function App() {
   return (
     <div className="flex justify-center mt-8">
       <div
-        className="grid grid-cols-10 gap-0.5 bg-gray-800 p-1 rounded"
-        style={{ width: 300, height: 600 }}
+        className="grid grid-cols-10 gap-0.5 bg-gray-500 p-1 rounded"
+        style={{ width: 300, height: 660 }}
       >
-				{boardWithPiece.flat().map((cell, idx) => (
-					<div
-						key={idx}
-						className={`w-7 h-7 ${
-						cell
-							? `${COLORS[cell] || "bg-white border-white"}`
-							: "bg-gray-900 border border-gray-700"
-						}`}
-					/>
-				))}
+        {boardWithPiece.flat().map((cell, idx) => {
+          const y = Math.floor(idx / BOARD_WIDTH);
+          return (
+            <div
+              key={idx}
+              className={`w-7 h-7 ${
+                cell
+                  ? `${COLORS[cell] || "bg-white border-white"}`
+                  : y < 2
+                    ? "bg-gray-900/10 border border-gray-700/50"
+                    : "bg-gray-900 border border-gray-700"
+              }`}
+            />
+          );
+        })}
       </div>
-			 {gameOver && (
-      <div className="mt-4 text-red-600 text-2xl font-bold">
-        Game Over
-      </div>
-    )}
+      {gameOver && (
+        <div className="mt-4 text-red-600 text-2xl font-bold">
+          Game Over
+        </div>
+      )}
     </div>
   );
 }

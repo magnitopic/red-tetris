@@ -25,7 +25,7 @@ export default function createSocketServer(httpServer) {
 		const socketIds = sockets.map(s => s.id);     // TODO: LOGS
 		console.log('Connected Players:', socketIds); // TODO: LOGS
 
-	  socket.on("join_room", ({ room, playerName, width= 10, height= 20 }) => {
+	  socket.on("join_room", ({ room, playerName, width = 10, height = 22 }) => {
       console.log(`Player ${playerName} joined room: ${room}`);
 
       let gameRoom = games.get(room);
