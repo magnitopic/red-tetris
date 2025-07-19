@@ -14,6 +14,7 @@ CREATE TABLE users (
 CREATE TABLE games (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    game_seed INTEGER UNIQUE NOT NULL,
     finished BOOLEAN DEFAULT FALSE
 );
 

@@ -17,6 +17,8 @@ import createSocketServer from "../Core/GameServer.js";
 // Router Imports:
 import AuthRouter from '../Routes/AuthRouter.js';
 import UsersRouter from '../Routes/UsersRouter.js';
+import GameRouter from '../Routes/GameRouter.js';
+import GamePlayersRouter from '../Routes/GamePlayersRouter.js';
 
 export default class App {
     constructor() {
@@ -63,5 +65,7 @@ export default class App {
     #setupRoutes() {
         this.app.use(`${this.API_PREFIX}/auth`, AuthRouter.createRouter());
         this.app.use(`${this.API_PREFIX}/users`, UsersRouter.createRouter());
+        this.app.use(`${this.API_PREFIX}/games`, GameRouter.createRouter());
+        this.app.use(`${this.API_PREFIX}/game-players`, GamePlayersRouter.createRouter());
     }
 }

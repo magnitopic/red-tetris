@@ -1,10 +1,13 @@
 // Third-Party Imports:
 import { Server } from "socket.io";
 import seedrandom from "seedrandom";
+import { randomUUID } from 'crypto';
 
 // Local imports:
 import { Player } from "../Game/Player.js";
-import Game from "../Game/Game.js"; 
+import  Game  from "../Game/Game.js"; 
+import gameModel from "../Models/GameModel.js";
+import gamePlayersModel from "../Models/GamePlayersModel.js";
 
 export default function createSocketServer(httpServer) {
   const io = new Server(httpServer, {
@@ -21,17 +24,35 @@ export default function createSocketServer(httpServer) {
   io.on("connection", async (socket) => {
     console.log(`🔌 New client connected: ${socket.id}`);
 
-	  socket.on("join_room", ({ room, playerName, width = 10, height = 22 }) => {
+	  socket.on("join_room", async ({ room, playerName, width = 10, height = 22 }) => {
       console.log(`Player ${playerName} joined room: ${room}`);
 
       let gameRoom = games.get(room);
 
       if (!gameRoom) {
-        // Create game with seed
-        const seed = Date.now();
-        const rng = seedrandom(seed);
+        const seed = Math.floor(100000 + Math.random() * 900000);
+        const rng = seedrandom(seed.toString());
         const game = new Game(width, height, rng, () => {
           io.to(room).emit("game_state", game.getState());
+        }, async () => {
+          console.log(`⚡ Game ${seed} ended`);
+
+          // PATCH: game ended
+          await gameModel.updateByReference(
+            { finished: true },
+            { game_seed: seed }
+          );
+
+          // PATCH: game players
+          for (const playerId of gameRoom.players) {
+            // TODO: calculate players scores
+            await gamePlayersModel.updateByReference(
+              { score: 100, position: 1 },
+              { game_id: seed, user_id: playerId }
+            );
+          }
+
+          console.log(`DB updated for game ${seed}`);
         });
 
         gameRoom = {
@@ -45,6 +66,20 @@ export default function createSocketServer(httpServer) {
         games.set(room, gameRoom);
 
         console.log(`Room ${room} created with host: ${playerName}`);
+
+        // POST new game
+        try {
+          await gameModel.createOrUpdate({
+            input: {
+              game_seed: seed,
+              finished: false
+            },
+            keyName: "game_seed"
+          });
+          console.log(`Game saved to DB with seed: ${seed}`);
+        } catch (err) {
+          console.error("Error saving game to DB:", err.message);
+        }
       }
 
       // Save player

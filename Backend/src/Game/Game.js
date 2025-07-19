@@ -2,12 +2,13 @@ import { Piece } from "./Piece.js";
 import { Board } from "./Board.js";
 
 export default class Game {
-  constructor(width = 10, height = 22, rng, onStateChange) {
+  constructor(width = 10, height = 22, rng, onStateChange, OnGameOver) {
     this.board = new Board(width, height);
     this.currentPiece = Piece.spawn(this.board);
     this.rng = rng;
     this.gameOver = false;
     this.onStateChange = onStateChange;
+    this.OnGameOver = OnGameOver;
   }
 
   moveLeft() {
@@ -45,6 +46,7 @@ export default class Game {
       if (this.currentPiece === null) {
         this.gameOver = true;
         console.log("Game over!!!")
+        this.onGameOver?.();
       }
     }
     this.onStateChange?.();
@@ -74,6 +76,7 @@ export default class Game {
         if (this.currentPiece === null) {
           this.gameOver = true;
           console.log("Game over!!!")
+          this.onGameOver?.();
         }
         break;
       }
