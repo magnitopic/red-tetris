@@ -32,36 +32,33 @@ export default function createSocketServer(httpServer) {
       if (!gameRoom) {
         const seed = Math.floor(100000 + Math.random() * 900000);
         const rng = seedrandom(seed.toString());
-        const game = new Game(width, height, rng, () => {
-          io.to(room).emit("game_state", game.getState());
-        }, async () => {
-          console.log(`⚡ Game ${seed} ended`);
-
-          // PATCH: game ended
-          await gameModel.updateByReference(
-            { finished: true },
-            { game_seed: seed }
-          );
-
-          // PATCH: game players
-          for (const playerId of gameRoom.players) {
-            // TODO: calculate players scores
-            await gamePlayersModel.updateByReference(
-              { score: 100, position: 1 },
-              { game_id: seed, user_id: playerId }
-            );
-          }
-
-          console.log(`DB updated for game ${seed}`);
-        });
 
         gameRoom = {
-          game,
           hostId: socket.id,
           players: new Set(),
           started: false,
-          seed
+          seed,
+          rng,
+          pieceQueue: [],    // Pieces sequence
+          pieceIndex: 0,
+          playerGames: new Map() // Map<playerId, Game>
         };
+
+        const pieces = ['I', 'O', 'T', 'S', 'Z', 'J', 'L'];
+
+        function fillPieceQueue(rng, pieceQueue) {
+          const bag = [...pieces];
+          for (let i = bag.length - 1; i > 0; i--) {
+            const j = Math.floor(rng() * (i + 1));
+            [bag[i], bag[j]] = [bag[j], bag[i]];
+          }
+          pieceQueue.push(...bag);
+        }
+
+        // generate pieces queue
+        while (gameRoom.pieceQueue.length < 100) {
+          fillPieceQueue(gameRoom.rng, gameRoom.pieceQueue);
+        }
 
         games.set(room, gameRoom);
 
@@ -107,8 +104,32 @@ export default function createSocketServer(httpServer) {
       });
 
 			if (gameRoom.started) {
+        const playerGame = new Game(
+          width, height,
+          () => { io.to(socket.id).emit("game_state", playerGame.getState()); },
+          async () => {
+            console.log(`Player ${socket.id}: game over.`);
+
+            await gamePlayersModel.updateByReference(
+              { game_id: gameRoom.seed, user_id: socket.id }
+            );
+
+            io.to(socket.id).emit("game_over");
+
+            // Check live players
+            const stillPlaying = Array.from(gameRoom.playerGames).filter(([_, g]) => !g.gameOver);
+            if (stillPlaying.length === 0) {
+              await gameModel.updateByReference({ finished: true }, { game_seed: gameRoom.seed });
+              io.to(room).emit("match_finished");
+            }
+          },
+          gameRoom
+        );
+        gameRoom.playerGames.set(socket.id, playerGame);
+        playerGame.startGravity();
+
         socket.emit("game_started");
-        socket.emit("game_state", gameRoom.game.getState());
+        //socket.emit("game_state", playerGame.getState());
       }
 
     });
@@ -133,10 +154,33 @@ export default function createSocketServer(httpServer) {
 
       gameRoom.started = true;
 
-      gameRoom.game.startGravity();
-			io.to(player.room).emit("game_started");
-      // Send initial state to all in room
-      io.to(player.room).emit("game_state", gameRoom.game.getState());
+      for (const playerId of gameRoom.players) {
+        const playerGame = new Game( 10, 22, () => 
+          { io.to(playerId).emit("game_state", playerGame.getState()); 
+          }, async () => {
+            console.log(`Player ${playerId} game over.`);
+
+            await gamePlayersModel.updateByReference(
+              { game_id: gameRoom.seed, user_id: playerId }
+            );
+
+            io.to(playerId).emit("game_over");
+
+            // Check if everyone finished
+            const stillPlaying = Array.from(gameRoom.playerGames).filter(([_, g]) => !g.gameOver);
+            if (stillPlaying.length === 0) {
+              await gameModel.updateByReference({ finished: true }, { game_seed: gameRoom.seed });
+              io.to(player.room).emit("match_finished");
+            }
+          },
+          gameRoom
+        );
+
+        gameRoom.playerGames.set(playerId, playerGame);
+        playerGame.startGravity();
+      }
+
+      io.to(player.room).emit("game_started");
     });
 
 		// Player actions:
@@ -153,8 +197,13 @@ export default function createSocketServer(httpServer) {
       const gameRoom = games.get(player.room);
       if (!gameRoom || !gameRoom.started) return;
 
-      gameRoom.game[action]();
-      io.to(player.room).emit("game_state", gameRoom.game.getState());
+      const playerGame = gameRoom.playerGames.get(playerId);
+      if (!playerGame) return;
+
+      if (typeof playerGame[action] === "function") {
+        playerGame[action]();
+        io.to(playerId).emit("game_state", playerGame.getState());
+      }
     }
 
 		// Handle disconnect:
@@ -167,6 +216,7 @@ export default function createSocketServer(httpServer) {
 
       if (gameRoom) {
         gameRoom.players.delete(socket.id);
+        gameRoom.playerGames.delete(socket.id);
 
         if (gameRoom.players.size === 0) {
           games.delete(room);

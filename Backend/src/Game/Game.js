@@ -1,14 +1,37 @@
 import { Piece } from "./Piece.js";
 import { Board } from "./Board.js";
+import { TETROMINOES } from "./Tetrominoes.js";
 
 export default class Game {
-  constructor(width = 10, height = 22, rng, onStateChange, OnGameOver) {
+  constructor(width = 10, height = 22, onStateChange, OnGameOver, gameRoom) {
     this.board = new Board(width, height);
-    this.currentPiece = Piece.spawn(this.board);
-    this.rng = rng;
+    this.gameRoom = gameRoom;
     this.gameOver = false;
     this.onStateChange = onStateChange;
     this.OnGameOver = OnGameOver;
+    
+    if (!this.gameRoom.pieceQueue) this.gameRoom.pieceQueue = [];
+    if (!this.gameRoom.pieceIndex) this.gameRoom.pieceIndex = 0;
+    this.currentPiece = this.spawnNextPiece();
+  }
+
+  getPieceTemplateById(piece) {
+    return TETROMINOES.find(t => t.name === piece);
+  }
+
+  spawnNextPiece() {
+    const { pieceQueue, pieceIndex } = this.gameRoom;
+
+    const pieceId = pieceQueue[pieceIndex];
+    this.gameRoom.pieceIndex++;
+
+    const pieceTemplate = this.getPieceTemplateById(pieceId);
+    if (!pieceTemplate) {
+      console.error("Error: undefined piece", pieceId);
+      return null;
+    }
+
+    return Piece.spawn(this.board, pieceTemplate);
   }
 
   moveLeft() {
@@ -40,7 +63,7 @@ export default class Game {
       this.board.lockPiece(this.currentPiece);
 
 			// Spawn new piece
-      this.currentPiece = Piece.spawn(this.board);
+      this.currentPiece = this.spawnNextPiece();
 
 			// check if new spawn collides
       if (this.currentPiece === null) {
@@ -62,7 +85,7 @@ export default class Game {
       if (this.board.isValidPosition(this.currentPiece.x, newY, this.currentPiece.shape)) {
         this.currentPiece.y = newY;
 
-        await new Promise(resolve => setTimeout(resolve, 20)); // 20 ms
+        await new Promise(resolve => setTimeout(resolve, 5)); // 5 ms
         this.onStateChange?.();
 
       } else {
@@ -70,7 +93,7 @@ export default class Game {
         this.board.lockPiece(this.currentPiece);
         
         // Spawn new piece
-        this.currentPiece = Piece.spawn(this.board);
+        this.currentPiece = this.spawnNextPiece();
         
         // check if new spawn collides
         if (this.currentPiece === null) {

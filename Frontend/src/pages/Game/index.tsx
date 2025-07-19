@@ -4,6 +4,8 @@ import { AuthProvider } from "./context/AuthContext"; */
 import { useState, useEffect } from "react";
 import { io } from "socket.io-client";
 
+import { usersApi } from "../../services/api/users";
+
 const BOARD_WIDTH = 10;
 const BOARD_HEIGHT = 22;
 
@@ -30,8 +32,24 @@ const COLORS: { [key: number]: string } = {
 
 const index: React.FC = () => {
 	const [gameState, setGameState] = useState(null);
+	const [playerName, setPlayerName] = useState("Guest");
 
 	useEffect(() => {
+	const fetchUser = async () => {
+		try {
+		const response = await usersApi.getMe();
+		if (response.msg?.username) {
+			setPlayerName(response.msg.username);
+		}
+		} catch (e) {
+		console.error("Error fetching user:", e);
+		}
+	};
+	fetchUser();
+	}, []);
+
+	useEffect(() => {
+		if (!playerName) return;
 		const socket = io("http://localhost:3001");
 
 		socket.on("connect", () => {
@@ -40,7 +58,7 @@ const index: React.FC = () => {
 
 		socket.emit("join_room", {
 			room: "room123",
-			playerName: "insertUser", //TODO INSERT user.username,
+			playerName: playerName,
 			BOARD_WIDTH,
 			BOARD_HEIGHT,
 		});
@@ -73,7 +91,7 @@ const index: React.FC = () => {
 			socket.disconnect();
 			window.removeEventListener("keydown", onKeyDown);
 		};
-	}, []);
+	}, [playerName]);
 
 	if (!gameState) {
 		return (
