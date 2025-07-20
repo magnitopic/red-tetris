@@ -82,7 +82,7 @@ const Header: React.FC = () => {
 			</div>
 			<button
 				onClick={handleLogout}
-				className="bg-primary text-white btn whitespace-nowrap text-sm px-6 py-2 rounded-full hover:bg-primary-monochromatic transition-colors duration-300"
+				className="text-white bg-primary border border-secondary-light hover:bg-secondary-light btn whitespace-nowrap text-sm px-6 py-2 rounded-full transition-colors duration-300"
 			>
 				Logout
 			</button>
@@ -92,14 +92,9 @@ const Header: React.FC = () => {
 	// Auth buttons component for desktop
 	const AuthButtons = () => (
 		<div className="flex items-center gap-3">
-			<Link to="/login">
+			<Link to="/authenticate">
 				<button className="text-white bg-primary border border-secondary-light hover:bg-secondary-light btn whitespace-nowrap text-sm px-6 py-2 rounded-full transition-colors duration-300">
-					Login
-				</button>
-			</Link>
-			<Link to="/register">
-				<button className="text-white bg-primary border border-secondary-light hover:bg-secondary-light btn whitespace-nowrap text-sm px-6 py-2 rounded-full transition-colors duration-300">
-					Register
+					Enter
 				</button>
 			</Link>
 		</div>
@@ -241,19 +236,11 @@ const Header: React.FC = () => {
 									) : (
 										<div className="flex flex-col gap-2">
 											<Link
-												to="/login"
+												to="/authenticate"
 												onClick={handleLinkClick}
 											>
 												<button className="w-full text-left px-4 py-3 rounded-lg hover:bg-primary-monochromatic transition-colors duration-300">
-													Login
-												</button>
-											</Link>
-											<Link
-												to="/register"
-												onClick={handleLinkClick}
-											>
-												<button className="w-full text-left px-4 py-3 rounded-lg hover:bg-primary-monochromatic transition-colors duration-300">
-													Register
+													Enter
 												</button>
 											</Link>
 										</div>

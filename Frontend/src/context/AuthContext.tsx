@@ -2,8 +2,7 @@ import React, { createContext, useState, useContext, useEffect } from "react";
 import {
 	authApi,
 	BasicUser,
-	LoginData,
-	RegisterData,
+	AuthenticateData,
 	AuthResponse,
 } from "../services/api/auth";
 import { usersApi } from "../services/api/users";
@@ -12,8 +11,7 @@ interface AuthContextType {
 	isAuthenticated: boolean;
 	user: BasicUser | null;
 	loading: boolean;
-	register: (data: RegisterData) => Promise<AuthResponse>;
-	login: (data: LoginData) => Promise<AuthResponse>;
+	authenticate: (data: AuthenticateData) => Promise<AuthResponse>;
 	logout: () => Promise<AuthResponse>;
 	oauth: (token: string, provider: string) => Promise<AuthResponse>;
 	refreshUserData: () => Promise<void>;
@@ -59,16 +57,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 		checkAuthStatus();
 	}, []);
 
-	const register = async (data: RegisterData): Promise<AuthResponse> => {
-		const response = await authApi.register(data);
-		if (response.success) {
-			await checkAuthStatus();
-		}
-		return response;
-	};
-
-	const login = async (data: LoginData): Promise<AuthResponse> => {
-		const response = await authApi.login(data);
+	const authenticate = async (
+		data: AuthenticateData
+	): Promise<AuthResponse> => {
+		const response = await authApi.authenticate(data);
 		if (response.success && response.user) {
 			setUser(response.user);
 			setIsAuthenticated(true);
@@ -131,8 +123,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 				isAuthenticated,
 				user,
 				loading,
-				register,
-				login,
+				authenticate,
 				logout,
 				oauth,
 				refreshUserData,

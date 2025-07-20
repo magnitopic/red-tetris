@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 // Local Imports:
 import userModel from '../Models/UserModel.js';
 import { returnErrorStatus } from '../Utils/errorUtils.js';
-import { validateUser } from '../Schemas/userSchema.js';
+import { validateUser, validatePartialUser } from '../Schemas/userSchema.js';
 import {
     validatePasswords,
     validatePartialPasswords,
@@ -22,7 +22,7 @@ import {
 } from '../Validations/authValidations.js';
 
 export default class AuthController {
-    static async login(req, res) {
+    static async authenticate(req, res) {
         // Check if user is logged in
         const authStatus = await checkAuthStatus(req);
         if (authStatus.isAuthorized)
@@ -30,33 +30,38 @@ export default class AuthController {
                 .status(400)
                 .json({ msg: StatusMessage.ALREADY_LOGGED_IN });
 
-        // Validations
-        const { user } = await loginValidations(req.body, res);
-        if (!user) return res;
-
-        // Create JWT
-        await createAuthTokens(res, user);
-        if (!('set-cookie' in res.getHeaders())) return res;
-
-        return res.json({ msg: StatusMessage.LOGIN_SUCCESS });
-    }
-
-    static async register(req, res) {
-        // Check if user is logged in
-        const authStatus = await checkAuthStatus(req);
-        if (authStatus.isAuthorized)
-            return res
-                .status(400)
-                .json({ msg: StatusMessage.ALREADY_LOGGED_IN });
-
-        // Validate and clean input
-        let validatedUser = await validateUser(req.body);
-        if (!validatedUser.success) {
-            const errorMessage = validatedUser.error.errors[0].message;
+        // First, validate basic input to check if we have username
+        const partialValidation = await validatePartialUser(req.body);
+        if (!partialValidation.success) {
+            const errorMessage = partialValidation.error.errors[0].message;
             return res.status(400).json({ msg: errorMessage });
         }
 
-        return await registerUser(res, validatedUser);
+        const { username } = partialValidation.data;
+
+        // Check if user exists
+        const existingUser = await userModel.findOne({ username });
+
+        if (existingUser && existingUser.length > 0) {
+            // User exists - perform login using existing validation logic
+            const { user } = await loginValidations(req.body, res);
+            if (!user) return res;
+
+            // Create JWT for login
+            await createAuthTokens(res, user);
+            if (!('set-cookie' in res.getHeaders())) return res;
+
+            return res.json({ msg: StatusMessage.LOGIN_SUCCESS });
+        } else {
+            // User doesn't exist - perform registration
+            const fullValidation = await validateUser(req.body);
+            if (!fullValidation.success) {
+                const errorMessage = fullValidation.error.errors[0].message;
+                return res.status(400).json({ msg: errorMessage });
+            }
+
+            return await registerUser(res, fullValidation);
+        }
     }
 
     static async logout(req, res) {

@@ -26,17 +26,6 @@ const MainInformation: React.FC<MainInformationProps> = ({ user }) => {
 
 			<div className="flex flex-col gap-1">
 				<p className="text-2xl font-semibold">{user.username}</p>
-
-				<div className="flex gap-1 flex-wrap justify-center font-light text-gray-500">
-					<p>
-						{(user.first_name
-							? capitalizeLetters(user.first_name) + " "
-							: "") +
-							(user.last_name
-								? capitalizeLetters(user.last_name)
-								: "")}
-					</p>
-				</div>
 			</div>
 		</div>
 	);

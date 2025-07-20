@@ -5,7 +5,6 @@ import { useProfile } from "../../hooks/PageData/useProfile";
 import { useAuth } from "../../context/AuthContext";
 import Spinner from "../../components/common/Spinner";
 import MainInformation from "../../components/profile/MainInformation";
-import Info from "../../components/profile/Info";
 
 const index = () => {
 	const { username } = useParams<{ username: string }>();
@@ -54,12 +53,11 @@ const index = () => {
 
 	return (
 		<main className="flex flex-1 justify-center items-center flex-col">
-			<section className="w-full bg-gradient-to-br from-red-200 to-purple-200 flex flex-col items-center gap-12">
+			<section className="w-full flex flex-col items-center gap-12">
 				<section className="container max-w-4xl text-center mt-20 px-3 relative">
 					<MainInformation user={userProfile} />
 				</section>
 			</section>
-			<Info user={userProfile} isOwnProfile={false} />
 		</main>
 	);
 };

@@ -5,21 +5,14 @@ import Game from "../pages/Game";
 import NotFound from "../pages/NotFound";
 import ProtectedRoute from "./ProtectedRoute";
 import Play from "../pages/Play";
-import Login from "../pages/LogIn";
+import Authenticate from "../pages/Authenticate";
 import Register from "../pages/Register";
 import Profile from "../pages/Profile";
 import ProfileEdit from "../pages/ProfileEdit";
 import PublicProfile from "../pages/PublicProfile";
+import Oauth from "../pages/Callbacks/Oauth";
 
 const protectedRoutes = {
-	profileEdit: {
-		path: "profile/edit",
-		element: (
-			<ProtectedRoute>
-				<ProfileEdit />
-			</ProtectedRoute>
-		),
-	},
 	profile: {
 		path: "profile",
 		element: (
@@ -36,7 +29,7 @@ const protectedRoutes = {
 			</ProtectedRoute>
 		),
 	},
-	/* game: {
+	game: {
 		path: "game",
 		element: (
 			<ProtectedRoute>
@@ -51,7 +44,7 @@ const protectedRoutes = {
 				<Play />
 			</ProtectedRoute>
 		),
-	}, */
+	},
 };
 
 const publicRoutes = {
@@ -59,22 +52,16 @@ const publicRoutes = {
 		index: true,
 		element: <Home />,
 	},
-	login: {
-		path: "login",
-		element: <Login />,
+	authenticate: {
+		path: "authenticate",
+		element: <Authenticate />,
 	},
-	register: {
-		path: "register",
-		element: <Register />,
-	},
+};
 
-	play: {
-		path: "play",
-		element: <Play />,
-	},
-	game: {
-		path: "game",
-		element: <Game />,
+const callbackRoutes = {
+	oauth: {
+		path: "auth/oauth/callback",
+		element: <Oauth />,
 	},
 };
 
@@ -94,6 +81,7 @@ export const router = createBrowserRouter(
 			children: [
 				...Object.values(publicRoutes),
 				...Object.values(protectedRoutes),
+				...Object.values(callbackRoutes),
 				...Object.values(defaultRoute),
 			],
 		},
@@ -112,5 +100,6 @@ export const router = createBrowserRouter(
 export const routes = {
 	...publicRoutes,
 	...protectedRoutes,
+	...callbackRoutes,
 	...defaultRoute,
 };
