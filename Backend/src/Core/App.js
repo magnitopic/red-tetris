@@ -28,8 +28,7 @@ export default class App {
         this.API_VERSION = process.env.API_VERSION;
         this.API_PREFIX = `/api/v${this.API_VERSION}`;
         this.IGNORED_ROUTES = [
-            `${this.API_PREFIX}/auth/login`,
-            `${this.API_PREFIX}/auth/register`,
+            `${this.API_PREFIX}/auth/authenticate`,
             `${this.API_PREFIX}/auth/status`,
             `${this.API_PREFIX}/auth/confirm`,
             `${this.API_PREFIX}/auth/oauth/*`,

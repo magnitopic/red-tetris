@@ -53,14 +53,14 @@ export default class AuthController {
 
             return res.json({ msg: StatusMessage.LOGIN_SUCCESS });
         } else {
-            // User doesn't exist - perform registration
+            // User doesn't exist - perform registration with auto-login
             const fullValidation = await validateUser(req.body);
             if (!fullValidation.success) {
                 const errorMessage = fullValidation.error.errors[0].message;
                 return res.status(400).json({ msg: errorMessage });
             }
 
-            return await registerUser(res, fullValidation);
+            return await registerUser(res, fullValidation, false, true);
         }
     }
 
