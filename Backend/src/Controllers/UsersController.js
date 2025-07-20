@@ -141,16 +141,10 @@ export default class UsersController {
                 StatusMessage.CANNOT_CHANGE_EMAIL
             );
 
-        const { email, username } = input;
-        if (email || username) {
-            const isUnique = await userModel.isUnique({ email, username });
+        const { username } = input;
+        if (username) {
+            const isUnique = await userModel.isUnique({ username });
             if (!isUnique) {
-                if (email)
-                    return returnErrorStatus(
-                        res,
-                        400,
-                        StatusMessage.DUPLICATE_EMAIL
-                    );
                 if (username)
                     return returnErrorStatus(
                         res,
@@ -170,10 +164,6 @@ export default class UsersController {
                 500,
                 StatusMessage.INTERNAL_SERVER_ERROR
             );
-
-        privateUser.email = user.email;
-        privateUser.prefered_language = user.prefered_language;
-
         return privateUser;
     }
 }

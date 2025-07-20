@@ -15,15 +15,11 @@ export default function createSocketServer(httpServer) {
   });
 
   // Save games by client-id
-  const players = new Map();
+  const players = new Map();   
 	const games = new Map();
 
   io.on("connection", async (socket) => {
     console.log(`🔌 New client connected: ${socket.id}`);
-
-		const sockets = await io.fetchSockets();      // TODO: LOGS
-		const socketIds = sockets.map(s => s.id);     // TODO: LOGS
-		console.log('Connected Players:', socketIds); // TODO: LOGS
 
 	  socket.on("join_room", ({ room, playerName, width = 10, height = 22 }) => {
       console.log(`Player ${playerName} joined room: ${room}`);

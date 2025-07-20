@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 const Footer = () => {
 	return (
-		<footer className="bg-gray-900 text-white p-4 rounded-t-lg">
+		<footer className="bg-gray-900 text-white p-4 rounded-t-lg mt-auto">
 			<div className="container flex justify-between flex-col md:flex-row md:gap-0 gap-5 m-auto items-center text-center md:text-start">
 				<div>
 					<h3 className="text-2xl font-bold">Red Tetris</h3>

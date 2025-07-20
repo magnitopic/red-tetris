@@ -92,7 +92,7 @@ export const profileApi = {
 		return response;
 	},
 
-	changePassword: async (passwords: string) => {
+	/* changePassword: async (passwords: string) => { TODO: delete?
 		const response = await apiRequest(`auth/password/change`, {
 			method: "POST",
 			body: JSON.stringify(passwords),
@@ -106,5 +106,5 @@ export const profileApi = {
 			body: JSON.stringify({ email }),
 		});
 		return response;
-	},
+	}, */
 };

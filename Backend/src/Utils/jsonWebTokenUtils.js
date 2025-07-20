@@ -30,22 +30,3 @@ export function createRefreshToken(user) {
 
     return refreshToken;
 }
-
-export function createResetPasswordToken(user) {
-    const { RESET_PASS_TOKEN_EXPIRY } = process.env;
-    const data = {
-        id: user.id,
-        username: user.username,
-    };
-    const resetPasswordToken = createJWT(data, RESET_PASS_TOKEN_EXPIRY);
-
-    return resetPasswordToken;
-}
-
-export function createConfirmationToken(data) {
-    const { CONFIRMATION_TOKEN_EXPIRY } = process.env;
-    data.purpose = 'email_confirmation';
-    const confirmationToken = createJWT(data, CONFIRMATION_TOKEN_EXPIRY);
-
-    return confirmationToken;
-}

@@ -10,9 +10,6 @@ export default class AuthRouter {
     static createRouter() {
         const router = Router();
 
-        // MIDDLEWARE:
-        router.use('/password/reset', controllerDeciderMiddleware());
-
         // GET:
         router.get('/status', AuthController.status);
         router.get('/confirm', AuthController.confirm);
@@ -21,7 +18,6 @@ export default class AuthRouter {
         router.post('/login', AuthController.login);
         router.post('/register', AuthController.register);
         router.post('/logout', AuthController.logout);
-        router.post('/password/change', AuthController.changePassword);
         router.post('/oauth/:provider', OAuthController.handleOAuth);
 
         return router;

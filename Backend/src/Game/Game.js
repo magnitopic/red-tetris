@@ -60,7 +60,7 @@ export default class Game {
       if (this.board.isValidPosition(this.currentPiece.x, newY, this.currentPiece.shape)) {
         this.currentPiece.y = newY;
 
-        await new Promise(resolve => setTimeout(resolve, 40)); // 40 ms
+        await new Promise(resolve => setTimeout(resolve, 20)); // 20 ms
         this.onStateChange?.();
 
       } else {
@@ -77,7 +77,6 @@ export default class Game {
         }
         break;
       }
-      //await new Promise(resolve => setTimeout(resolve, 30));
     }
   }
 
