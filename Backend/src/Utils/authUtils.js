@@ -73,7 +73,7 @@ export async function createAuthTokens(res, data) {
         });
 }
 
-export async function registerUser(res, validatedUser, oauth = false) {
+export async function registerUser(res, validatedUser, oauth = false, autoLogin = false) {
     const { username, password } = validatedUser.data;
     const isUnique = await userModel.isUnique({ username });
     if (isUnique) {
@@ -94,12 +94,18 @@ export async function registerUser(res, validatedUser, oauth = false) {
                 .json({ error: StatusMessage.USER_NOT_FOUND });
         }
 
-        if (oauth) {
+        // Create auth tokens if OAuth or autoLogin is requested
+        if (oauth || autoLogin) {
             await createAuthTokens(res, user);
             if (!('set-cookie' in res.getHeaders())) return res;
         }
 
-        // Returns public user info:
+        // If autoLogin is true, return login success message instead of user data
+        if (autoLogin) {
+            return res.status(201).json({ msg: StatusMessage.LOGIN_SUCCESS });
+        }
+
+        // Returns public user info (original behavior):
         const publicUser = await getPublicUser(user);
         if (!publicUser)
             return res

@@ -13,6 +13,13 @@ interface LoginData {
 	password: string;
 }
 
+// Data for the new authenticate endpoint
+interface AuthenticateData {
+	username: string;
+	password: string;
+	profile_picture_url?: string;
+}
+
 // Basic user info from auth status
 interface BasicUser {
 	id: string;
@@ -28,45 +35,33 @@ interface AuthResponse {
 	user?: BasicUser;
 }
 
-export type { BasicUser, RegisterData, LoginData, AuthResponse };
+export type {
+	BasicUser,
+	RegisterData,
+	LoginData,
+	AuthenticateData,
+	AuthResponse,
+};
 
 // Authentication service methods
 export const authApi = {
-	register: async (userData: RegisterData): Promise<AuthResponse> => {
+	authenticate: async (userData: AuthenticateData): Promise<AuthResponse> => {
 		try {
-			const response = await apiRequest("auth/register", {
+			await apiRequest("auth/authenticate", {
 				method: "POST",
 				body: JSON.stringify(userData),
 			});
-			return {
-				success: true,
-				message: "Registration successful",
-			};
-		} catch (error: any) {
-			return {
-				success: false,
-				message: error.message || "Registration failed",
-			};
-		}
-	},
-
-	login: async (userData: LoginData): Promise<AuthResponse> => {
-		try {
-			await apiRequest("auth/login", {
-				method: "POST",
-				body: JSON.stringify(userData),
-			});
-			// After successful login, fetch the user status
+			// After successful authentication, fetch the user status
 			const status = await authApi.checkAuth();
 			return {
 				success: true,
-				message: "Login successful",
+				message: "Authentication successful",
 				user: status.user,
 			};
 		} catch (error: any) {
 			return {
 				success: false,
-				message: error.message || "Login failed",
+				message: error.message || "Authentication failed",
 			};
 		}
 	},

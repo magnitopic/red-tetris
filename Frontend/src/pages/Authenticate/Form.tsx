@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import FormInput from "../../components/common/FormInput";
 import MsgCard from "../../components/common/MsgCard";
 import OauthGoogleButton from "../../components/common/oauthButtons/OauthGoogleButton";
@@ -10,8 +10,8 @@ import { useAuth } from "../../context/AuthContext";
 import RegularButton from "../../components/common/RegularButton";
 import ResetPassword from "./ResetPassword";
 
-const LoginForm: React.FC = () => {
-	const { login } = useAuth();
+const AuthenticateForm: React.FC = () => {
+	const { authenticate } = useAuth();
 	const navigate = useNavigate();
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -38,7 +38,7 @@ const LoginForm: React.FC = () => {
 		setIsSubmitting(true);
 
 		try {
-			const { success, message } = await login(formData);
+			const { success, message } = await authenticate(formData);
 
 			if (success) {
 				setFormData({
@@ -90,7 +90,9 @@ const LoginForm: React.FC = () => {
 							disabled={isSubmitting}
 						/>
 					</div>
-					<p>Or enter your credentials to access your account</p>
+					<p>
+						Or enter your credentials to login or create an account
+					</p>
 					<FormInput
 						name="username"
 						onChange={handleChange}
@@ -107,24 +109,13 @@ const LoginForm: React.FC = () => {
 						disabled={isSubmitting}
 					/>
 					<RegularButton
-						value="Access Account"
+						value="Login or Sign Up"
 						disabled={isSubmitting}
 					/>
 				</form>
-				<div className="w-full text-start p-0 mt-8">
-					<p>
-						Don't have an account yet?{" "}
-						<Link
-							to="/register"
-							className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-						>
-							Create account
-						</Link>
-					</p>
-				</div>
 			</div>
 		</>
 	);
 };
 
-export default LoginForm;
+export default AuthenticateForm;
