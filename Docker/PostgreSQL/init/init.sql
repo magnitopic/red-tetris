@@ -5,7 +5,6 @@ CREATE TABLE users (
     username VARCHAR(50) UNIQUE NOT NULL,
     password VARCHAR(255) DEFAULT NULL,
     profile_picture VARCHAR(255) DEFAULT NULL,
-    active_account BOOLEAN DEFAULT FALSE,
     oauth BOOLEAN DEFAULT FALSE,
     refresh_token VARCHAR(2048) DEFAULT NULL,
     reset_pass_token VARCHAR(2048) DEFAULT NULL

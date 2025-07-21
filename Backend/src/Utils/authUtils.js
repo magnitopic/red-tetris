@@ -7,6 +7,7 @@ import userModel from '../Models/UserModel.js';
 import getPublicUser from './getPublicUser.js';
 import { createAccessToken, createRefreshToken } from './jsonWebTokenUtils.js';
 import StatusMessage from './StatusMessage.js';
+import { validateUser, validatePartialUser } from '../Schemas/userSchema.js';
 
 export async function checkAuthStatus(req) {
     try {
@@ -73,7 +74,12 @@ export async function createAuthTokens(res, data) {
         });
 }
 
-export async function registerUser(res, validatedUser, oauth = false, autoLogin = false) {
+export async function registerUser(
+    res,
+    validatedUser,
+    oauth = false,
+    autoLogin = false
+) {
     const { username, password } = validatedUser.data;
     const isUnique = await userModel.isUnique({ username });
     if (isUnique) {
@@ -114,7 +120,58 @@ export async function registerUser(res, validatedUser, oauth = false, autoLogin 
         return res.status(201).json({ msg: publicUser });
     }
 
-    return res
-        .status(400)
-        .json({ msg: StatusMessage.DUPLICATE_USERNAME });
+    return res.status(400).json({ msg: StatusMessage.DUPLICATE_USERNAME });
+}
+
+export async function authenticateUser(req, res) {
+    try {
+        // Check if we have username and password
+        const partialValidation = await validatePartialUser(req.body);
+        if (!partialValidation.success) {
+            const errorMessage = partialValidation.error.errors[0].message;
+            return res.status(400).json({ msg: errorMessage });
+        }
+
+        const { username, password } = partialValidation.data;
+
+        // Check if user exists
+        const existingUser = await userModel.findOne({ username });
+
+        if (existingUser && existingUser.length !== 0) {
+            // User exists - perform login
+            if (!existingUser.password)
+                return res
+                    .status(403)
+                    .json({ msg: StatusMessage.CANNOT_LOGIN_WITH_PASS });
+
+            // Validate password
+            const isValidPassword = await bcrypt.compare(
+                password,
+                existingUser.password
+            );
+            if (!isValidPassword)
+                return res
+                    .status(401)
+                    .json({ msg: StatusMessage.WRONG_PASSWORD });
+
+            await createAuthTokens(res, existingUser);
+            if (!('set-cookie' in res.getHeaders())) return res;
+
+            return res.json({ msg: StatusMessage.LOGIN_SUCCESS });
+        } else {
+            // User doesn't exist - perform registration with auto-login
+            const fullValidation = await validateUser(req.body);
+            if (!fullValidation.success) {
+                const errorMessage = fullValidation.error.errors[0].message;
+                return res.status(400).json({ msg: errorMessage });
+            }
+
+            return await registerUser(res, fullValidation, false, true);
+        }
+    } catch (error) {
+        console.error('Authentication error:', error);
+        return res
+            .status(500)
+            .json({ msg: StatusMessage.INTERNAL_SERVER_ERROR });
+    }
 }

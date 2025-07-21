@@ -15,6 +15,7 @@ import {
     hashPassword,
     createAuthTokens,
     registerUser,
+    authenticateUser,
 } from '../Utils/authUtils.js';
 import {
     confirmAccountValidations,
@@ -30,38 +31,7 @@ export default class AuthController {
                 .status(400)
                 .json({ msg: StatusMessage.ALREADY_LOGGED_IN });
 
-        // First, validate basic input to check if we have username
-        const partialValidation = await validatePartialUser(req.body);
-        if (!partialValidation.success) {
-            const errorMessage = partialValidation.error.errors[0].message;
-            return res.status(400).json({ msg: errorMessage });
-        }
-
-        const { username } = partialValidation.data;
-
-        // Check if user exists
-        const existingUser = await userModel.findOne({ username });
-
-        if (existingUser && existingUser.length > 0) {
-            // User exists - perform login using existing validation logic
-            const { user } = await loginValidations(req.body, res);
-            if (!user) return res;
-
-            // Create JWT for login
-            await createAuthTokens(res, user);
-            if (!('set-cookie' in res.getHeaders())) return res;
-
-            return res.json({ msg: StatusMessage.LOGIN_SUCCESS });
-        } else {
-            // User doesn't exist - perform registration with auto-login
-            const fullValidation = await validateUser(req.body);
-            if (!fullValidation.success) {
-                const errorMessage = fullValidation.error.errors[0].message;
-                return res.status(400).json({ msg: errorMessage });
-            }
-
-            return await registerUser(res, fullValidation, false, true);
-        }
+        return await authenticateUser(req, res);
     }
 
     static async logout(req, res) {
