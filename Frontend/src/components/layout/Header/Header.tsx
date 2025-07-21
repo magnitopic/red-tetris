@@ -76,7 +76,7 @@ const Header: React.FC = () => {
 	const UserMenu = () => (
 		<div className="flex items-center gap-4">
 			<div className="flex items-center gap-2">
-				<span className="text-primary font-medium">
+				<span className="text-font-main font-medium">
 					{user?.username}
 				</span>
 			</div>
@@ -193,12 +193,12 @@ const Header: React.FC = () => {
 								<div className="flex flex-col gap-4 mb-8">
 									{isAuthenticated && user && (
 										<div className="flex items-center gap-2 mb-4 pb-4 border-b border-white/20">
-											<span className="text-white font-medium">
+											<span className=" font-medium">
 												{"Hello "}
 												<Link
 													to="/profile"
 													onClick={handleLinkClick}
-													className="font-bold underline"
+													className="font-bold underline text-font-main"
 												>
 													{user.username}
 												</Link>
