@@ -44,22 +44,6 @@ export default function createSocketServer(httpServer) {
           playerGames: new Map() // Map<playerId, Game>
         };
 
-        const pieces = ['I', 'O', 'T', 'S', 'Z', 'J', 'L'];
-
-        function fillPieceQueue(rng, pieceQueue) {
-          const bag = [...pieces];
-          for (let i = bag.length - 1; i > 0; i--) {
-            const j = Math.floor(rng() * (i + 1));
-            [bag[i], bag[j]] = [bag[j], bag[i]];
-          }
-          pieceQueue.push(...bag);
-        }
-
-        // generate pieces queue
-        while (gameRoom.pieceQueue.length < 100) {
-          fillPieceQueue(gameRoom.rng, gameRoom.pieceQueue);
-        }
-
         games.set(room, gameRoom);
 
         console.log(`Room ${room} created with host: ${playerName}`);

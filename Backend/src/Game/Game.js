@@ -11,7 +11,7 @@ export default class Game {
     this.OnGameOver = OnGameOver;
     
     if (!this.gameRoom.pieceQueue) this.gameRoom.pieceQueue = [];
-    if (!this.gameRoom.pieceIndex) this.gameRoom.pieceIndex = 0;
+    this.pieceIndex = 0;
     this.currentPiece = this.spawnNextPiece();
   }
 
@@ -20,10 +20,20 @@ export default class Game {
   }
 
   spawnNextPiece() {
-    const { pieceQueue, pieceIndex } = this.gameRoom;
+    if (this.pieceIndex >= this.gameRoom.pieceQueue.length - 7) {
+      const pieces = TETROMINOES.map(t => t.name);
+      const bag = [...pieces];
+      const rng = this.gameRoom.rng;
 
-    const pieceId = pieceQueue[pieceIndex];
-    this.gameRoom.pieceIndex++;
+      for (let i = bag.length - 1; i > 0; i--) {
+        const j = Math.floor(rng() * (i + 1));
+        [bag[i], bag[j]] = [bag[j], bag[i]];
+      }
+      this.gameRoom.pieceQueue.push(...bag);
+    }
+
+    const pieceId = this.gameRoom.pieceQueue[this.pieceIndex];
+    this.pieceIndex++;
 
     const pieceTemplate = this.getPieceTemplateById(pieceId);
     if (!pieceTemplate) {
