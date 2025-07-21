@@ -121,8 +121,8 @@ export default function createSocketServer(httpServer) {
             const stillPlaying = Array.from(gameRoom.playerGames).filter(([_, g]) => !g.gameOver);
             if (stillPlaying.length === 0) {
               console.log("game finished: update:");
-              await gameModel.updateByReference({ finished: true }, { game_id: gameRoom.id });
-              io.to(room).emit("match_finished");
+              //await gameModel.updateByReference({ finished: true }, { game_id: gameRoom.id });
+              //io.to(room).emit("match_finished");
             }
           },
           gameRoom,
@@ -132,7 +132,6 @@ export default function createSocketServer(httpServer) {
         playerGame.startGravity();
 
         socket.emit("game_started");
-        //socket.emit("game_state", playerGame.getState());
       }
 
     });
