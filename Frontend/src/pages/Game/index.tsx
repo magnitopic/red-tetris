@@ -33,6 +33,7 @@ const COLORS: { [key: number]: string } = {
 const index: React.FC = () => {
 	const [gameState, setGameState] = useState(null);
 	const [playerName, setPlayerName] = useState("Guest");
+	const [userId, setUserId] = useState(null);
 
 	useEffect(() => {
 	const fetchUser = async () => {
@@ -40,6 +41,7 @@ const index: React.FC = () => {
 		const response = await usersApi.getMe();
 		if (response.msg?.username) {
 			setPlayerName(response.msg.username);
+			setUserId(response.msg.id);
 		}
 		} catch (e) {
 		console.error("Error fetching user:", e);
@@ -59,6 +61,7 @@ const index: React.FC = () => {
 		socket.emit("join_room", {
 			room: "room123",
 			playerName: playerName,
+			userId: userId,
 			BOARD_WIDTH,
 			BOARD_HEIGHT,
 		});

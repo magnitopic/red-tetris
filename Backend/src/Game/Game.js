@@ -3,12 +3,13 @@ import { Board } from "./Board.js";
 import { TETROMINOES } from "./Tetrominoes.js";
 
 export default class Game {
-  constructor(width = 10, height = 22, onStateChange, OnGameOver, gameRoom) {
+  constructor(width = 10, height = 22, onStateChange, OnGameOver, gameRoom, userId) {
     this.board = new Board(width, height);
     this.gameRoom = gameRoom;
     this.gameOver = false;
     this.onStateChange = onStateChange;
     this.OnGameOver = OnGameOver;
+     this.userId = userId;
     
     if (!this.gameRoom.pieceQueue) this.gameRoom.pieceQueue = [];
     this.pieceIndex = 0;
@@ -79,7 +80,7 @@ export default class Game {
       if (this.currentPiece === null) {
         this.gameOver = true;
         console.log("Game over!!!")
-        this.onGameOver?.();
+        this.OnGameOver?.(this.userId);
       }
     }
     this.onStateChange?.();
@@ -109,7 +110,7 @@ export default class Game {
         if (this.currentPiece === null) {
           this.gameOver = true;
           console.log("Game over!!!")
-          this.onGameOver?.();
+          this.OnGameOver?.(this.userId);
         }
         break;
       }

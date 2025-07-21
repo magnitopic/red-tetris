@@ -1,4 +1,3 @@
-// src/Models/GamePlayersModel.js
 import Model from '../Core/Model.js';
 
 class GamePlayersModel extends Model {

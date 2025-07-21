@@ -23,7 +23,7 @@ export default class GameController {
         try {
             const result = await gameModel.createOrUpdate({
                 input,
-                keyName: 'game_seed', // usamos el campo único
+                keyName: 'game_seed',
             });
 
             if (!result) return res.status(500).json({ message: 'Error saving game.' });

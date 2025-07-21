@@ -24,7 +24,8 @@ export default function createSocketServer(httpServer) {
   io.on("connection", async (socket) => {
     console.log(`🔌 New client connected: ${socket.id}`);
 
-	  socket.on("join_room", async ({ room, playerName, width = 10, height = 22 }) => {
+	  socket.on("join_room", async ({ room, playerName, userId, width = 10, height = 22 }) => {
+      socket.userId = userId;
       console.log(`Player ${playerName} joined room: ${room}`);
 
       let gameRoom = games.get(room);
@@ -50,13 +51,14 @@ export default function createSocketServer(httpServer) {
 
         // POST new game
         try {
-          await gameModel.createOrUpdate({
+          const savedGame = await gameModel.createOrUpdate({
             input: {
               game_seed: seed,
               finished: false
             },
             keyName: "game_seed"
           });
+          gameRoom.id = savedGame.id; 
           console.log(`Game saved to DB with seed: ${seed}`);
         } catch (err) {
           console.error("Error saving game to DB:", err.message);
@@ -66,6 +68,21 @@ export default function createSocketServer(httpServer) {
       // Save player
       const player = new Player(socket.id, playerName);
       players.set(socket.id, player);
+
+      // POST new game-player
+      try {
+        await gamePlayersModel.create({
+          input: {
+            game_id: gameRoom.id,
+            user_id: userId,
+            score: 0,
+            position: 0
+          }
+        });
+        console.log(`game_players created for ${playerName}`);
+      } catch (err) {
+        console.error("Error creando game_players:", err.message);
+      }
 
       // Track in room
       gameRoom.players.add(socket.id);
@@ -95,19 +112,21 @@ export default function createSocketServer(httpServer) {
             console.log(`Player ${socket.id}: game over.`);
 
             await gamePlayersModel.updateByReference(
-              { game_id: gameRoom.seed, user_id: socket.id }
-            );
+              { score: 42, position: 1 }, 
+              { game_id: gameRoom.id, user_id: userId });
 
             io.to(socket.id).emit("game_over");
 
             // Check live players
             const stillPlaying = Array.from(gameRoom.playerGames).filter(([_, g]) => !g.gameOver);
             if (stillPlaying.length === 0) {
-              await gameModel.updateByReference({ finished: true }, { game_seed: gameRoom.seed });
+              console.log("game finished: update:");
+              await gameModel.updateByReference({ finished: true }, { game_id: gameRoom.id });
               io.to(room).emit("match_finished");
             }
           },
-          gameRoom
+          gameRoom,
+          socket.userId
         );
         gameRoom.playerGames.set(socket.id, playerGame);
         playerGame.startGravity();
@@ -145,7 +164,8 @@ export default function createSocketServer(httpServer) {
             console.log(`Player ${playerId} game over.`);
 
             await gamePlayersModel.updateByReference(
-              { game_id: gameRoom.seed, user_id: playerId }
+              {score: 21, position:3},
+              { game_id: gameRoom.id, user_id: socket.userId }
             );
 
             io.to(playerId).emit("game_over");
@@ -153,11 +173,13 @@ export default function createSocketServer(httpServer) {
             // Check if everyone finished
             const stillPlaying = Array.from(gameRoom.playerGames).filter(([_, g]) => !g.gameOver);
             if (stillPlaying.length === 0) {
-              await gameModel.updateByReference({ finished: true }, { game_seed: gameRoom.seed });
+              console.log("finished, update:");
+              await gameModel.updateByReference({ finished: true }, { id: gameRoom.id });
               io.to(player.room).emit("match_finished");
             }
           },
-          gameRoom
+          gameRoom,
+          socket.userId
         );
 
         gameRoom.playerGames.set(playerId, playerGame);
