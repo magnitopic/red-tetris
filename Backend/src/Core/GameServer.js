@@ -96,7 +96,8 @@ export default function createSocketServer(httpServer) {
         host: gameRoom.hostId === socket.id,
         players: Array.from(gameRoom.players).map(id => players.get(id)?.name || id),
         started: gameRoom.started,
-        seed: gameRoom.seed
+        seed: gameRoom.seed,
+        socketId: socket.id 
       });
 
       // Notify others
@@ -131,6 +132,25 @@ export default function createSocketServer(httpServer) {
         gameRoom.playerGames.set(socket.id, playerGame);
         playerGame.startGravity();
 
+        // send game_state to user
+        io.to(socket.id).emit("game_state", {
+          playerId: socket.id,
+          playerName: player.name,
+          state: playerGame.getState()
+        });
+
+        // send game_state to other players
+        for (const [otherPlayerId, otherPlayerGame] of gameRoom.playerGames) {
+          if (otherPlayerId !== socket.id) {
+            const otherPlayer = players.get(otherPlayerId);
+            io.to(socket.id).emit("game_state", {
+              playerId: otherPlayerId,
+              playerName: otherPlayer?.name || "Unknown",
+              state: otherPlayerGame.getState()
+            });
+          }
+        }
+
         socket.emit("game_started");
       }
 
@@ -158,7 +178,13 @@ export default function createSocketServer(httpServer) {
 
       for (const playerId of gameRoom.players) {
         const playerGame = new Game( 10, 22, () => 
-          { io.to(playerId).emit("game_state", playerGame.getState()); 
+          { 
+            const player = players.get(playerId);
+            io.to(playerId).emit("game_state", {
+            playerId, 
+            playerName: player?.name || "Unknown",
+            state: playerGame.getState()
+          }); 
           }, async () => {
             console.log(`Player ${playerId} game over.`);
 
@@ -172,7 +198,6 @@ export default function createSocketServer(httpServer) {
             // Check if everyone finished
             const stillPlaying = Array.from(gameRoom.playerGames).filter(([_, g]) => !g.gameOver);
             if (stillPlaying.length === 0) {
-              console.log("finished, update:");
               await gameModel.updateByReference({ finished: true }, { id: gameRoom.id });
               io.to(player.room).emit("match_finished");
             }
@@ -184,6 +209,12 @@ export default function createSocketServer(httpServer) {
 
         gameRoom.playerGames.set(playerId, playerGame);
         playerGame.startGravity();
+
+        io.to(playerId).emit("game_state", {
+          playerId,
+          playerName: player.name,
+          state: playerGame.getState()
+        });
       }
 
       io.to(player.room).emit("game_started");
@@ -208,7 +239,11 @@ export default function createSocketServer(httpServer) {
 
       if (typeof playerGame[action] === "function") {
         playerGame[action]();
-        io.to(playerId).emit("game_state", playerGame.getState());
+        io.to(player.room).emit("game_state", {
+          playerId, 
+          playerName: player.name,
+          state: playerGame.getState()
+        });
       }
     }
 
