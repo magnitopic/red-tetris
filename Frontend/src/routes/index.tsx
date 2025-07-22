@@ -30,7 +30,7 @@ const protectedRoutes = {
 		),
 	},
 	game: {
-		path: "game",
+		path: "game/:clientRoomId",
 		element: (
 			<ProtectedRoute>
 				<Game />

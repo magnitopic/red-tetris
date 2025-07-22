@@ -5,9 +5,6 @@ interface MainInformationProps {
 	user: {
 		profile_picture: string;
 		username: string;
-		age: number;
-		first_name: string;
-		last_name: string;
 	};
 }
 

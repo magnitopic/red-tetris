@@ -1,54 +1,24 @@
 /* import { RouterProvider } from "react-router-dom";
 import { router } from "./routes";
 import { AuthProvider } from "./context/AuthContext"; */
-import { useState, useEffect } from "react";
+import GameScreen from "./GameScreen";
+import HostScreen from "./HostScreen";
+import { useAuth } from "../../context/AuthContext";
+import { useEffect, useState } from "react";
 import { io } from "socket.io-client";
-
-import { usersApi } from "../../services/api/users";
-
-const BOARD_WIDTH = 10;
-const BOARD_HEIGHT = 22;
-
-interface GameState {
-	board: number[][];
-	currentPiece: {
-		shape: number[][];
-		x: number;
-		y: number;
-		color: number;
-	} | null;
-	gameOver: boolean;
-}
-
-const COLORS: { [key: number]: string } = {
-	1: "bg-cyan-500 border-cyan-700", // I
-	2: "bg-blue-600 border-blue-700", // J
-	3: "bg-orange-500 border-orange-700", // L
-	4: "bg-yellow-400 border-yellow-600", // O
-	5: "bg-green-500 border-green-700", // S
-	6: "bg-purple-500 border-purple-700", // T
-	7: "bg-red-500 border-red-700", // Z
-};
+import { useParams } from "react-router-dom";
 
 const index: React.FC = () => {
-	const [gameState, setGameState] = useState(null);
-	const [playerName, setPlayerName] = useState("Guest");
-	const [userId, setUserId] = useState(null);
+	const { clientRoomId } = useParams();
+	const { user } = useAuth();
+	const [isHost, setIsHost] = useState(false);
+	const [currentPlayers, setCurrentPlayers] = useState([]);
+	const [seed, setSeed] = useState("");
+	const playerName = user?.username;
+	const userId = user?.id;
 
-	useEffect(() => {
-	const fetchUser = async () => {
-		try {
-		const response = await usersApi.getMe();
-		if (response.msg?.username) {
-			setPlayerName(response.msg.username);
-			setUserId(response.msg.id);
-		}
-		} catch (e) {
-		console.error("Error fetching user:", e);
-		}
-	};
-	fetchUser();
-	}, []);
+	const BOARD_WIDTH = 10;
+	const BOARD_HEIGHT = 22;
 
 	useEffect(() => {
 		if (!playerName) return;
@@ -58,108 +28,60 @@ const index: React.FC = () => {
 			console.log("Connected to server");
 		});
 
-		socket.emit("join_room", {
-			room: "room123",
-			playerName: playerName,
-			userId: userId,
-			BOARD_WIDTH,
-			BOARD_HEIGHT,
-		});
+		if (clientRoomId === "new") {
+			socket.emit("create_room", {
+				playerName: playerName,
+				userId: userId,
+				width: BOARD_WIDTH,
+				height: BOARD_HEIGHT,
+			});
+			console.log("Creating new room");
+		} else {
+			socket.emit("join_room", {
+				room: clientRoomId,
+				playerName: playerName,
+				userId: userId,
+				width: BOARD_WIDTH,
+				height: BOARD_HEIGHT,
+			});
+		}
 
-		socket.on("joined_room", ({ host, players }) => {
+		socket.on("room_created", ({ room, host, players, seed }) => {
+			console.log(`Room created: ${room}`);
 			console.log(`Is host: ${host}`);
 			console.log(`Current players: ${players}`);
+			console.log(`Current seed: ${seed}`);
+
+			setIsHost(host);
+			setCurrentPlayers(players);
+			window.history.pushState({}, "", `/game/${room}`);
+			setSeed(seed);
 		});
 
-		socket.emit("start_game");
+		socket.on("joined_room", ({ host, players, seed }) => {
+			console.log(`Is host: ${host}`);
+			console.log(`Current players: ${players}`);
+			console.log(`Current seed: ${seed}`);
 
-		socket.on("game_state", (state: GameState) => {
-			setGameState(state);
+			setIsHost(host);
+			setCurrentPlayers(players);
+			window.history.pushState({}, "", `/game/${seed}`);
+			setSeed(seed);
 		});
-
-		// Events
-		const onKeyDown = (e: KeyboardEvent) => {
-			if (!socket) return;
-			if (e.key === "ArrowLeft") socket.emit("move_left");
-			if (e.key === "ArrowRight") socket.emit("move_right");
-			if (e.key === "ArrowUp") socket.emit("rotate");
-			if (e.key === "ArrowDown") socket.emit("soft_drop");
-			if (e.key === " ") socket.emit("hard_drop");
-			if (e.key === "Escape") socket.disconnect();
-		};
-
-		window.addEventListener("keydown", onKeyDown);
-
-		return () => {
-			socket.disconnect();
-			window.removeEventListener("keydown", onKeyDown);
-		};
-	}, [playerName]);
-
-	if (!gameState) {
-		return (
-			<div className="text-center mt-10 text-xl text-gray-500">
-				Loading game...
-			</div>
-		);
-	}
-
-
-
-	const { board, currentPiece, gameOver } = gameState;
-
-	const boardWithPiece = board.map((row) => [...row]);
-
-	if (!gameOver && currentPiece) {
-		currentPiece.shape.forEach((row, dy) => {
-			row.forEach((cell, dx) => {
-				if (cell) {
-					const x = currentPiece.x + dx;
-					const y = currentPiece.y + dy;
-					if (
-						y >= 0 &&
-						y < BOARD_HEIGHT &&
-						x >= 0 &&
-						x < BOARD_WIDTH
-					) {
-						boardWithPiece[y][x] = cell;
-					}
-				}
-			});
-		});
-	}
+	}, [playerName, userId]);
 
 	return (
-		<div className="flex justify-center mt-8">
-			<div
-				className="grid grid-cols-10 gap-0.5 bg-primary-dark p-1 rounded"
-				style={{ width: 300, height: 660 }}
-			>
-				{boardWithPiece.flat().map((cell, idx) => {
-					const y = Math.floor(idx / BOARD_WIDTH);
-					return (
-						<div
-							key={idx}
-							className={`w-7 h-7 ${
-								cell
-									? `${
-											COLORS[cell] ||
-											"bg-white border-white"
-									  }`
-									: y < 2
-									? ""
-									: "bg-gray-900 border border-gray-700"
-							}`}
-						/>
-					);
-				})}
-			</div>
-			{gameOver && (
-				<div className="mt-4 text-red-600 text-2xl font-bold">
-					Game Over
-				</div>
+		<>
+			{isHost ? (
+				<HostScreen currentPlayers={currentPlayers} seed={seed} />
+			) : (
+				<main className="flex flex-1 justify-center items-center flex-col">
+					<h1 className="text-4xl font-bold mb-4">
+						Waiting for host to start...
+					</h1>
+				</main>
 			)}
-		</div>
+		</>
 	);
 };
 
