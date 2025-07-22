@@ -25,6 +25,7 @@ const COLORS: { [key: number]: string } = {
 	5: "bg-green-500 border-green-700", // S
 	6: "bg-purple-500 border-purple-700", // T
 	7: "bg-red-500 border-red-700", // Z
+	8: "bg-gray-500 border-gray-700", // Garbage
 };
 
 const GameScreen: React.FC = () => {

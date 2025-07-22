@@ -34,7 +34,14 @@ export default class GameController {
         }
     }
 
-    static async getGameById(req, res) {
+    static async getGame(req, res) {
+        const { seed } = req.params;
 
+        const result = await gameModel.getByReference(
+			{ game_seed: seed }, true
+		);
+
+		if (!result.game_seed) return res.status(404).json({ msg: 'No game found' });
+			return res.json(result);
     }
 }

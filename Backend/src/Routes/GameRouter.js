@@ -10,7 +10,7 @@ export default class GameRouter {
 
         // GET:
         router.get('/', GameController.getAllGames);
-        router.get('/:id', GameController.getGameById);
+        router.get('/:seed', GameController.getGame);
 
         // POST:
         router.post('/create', GameController.createOrUpdateGame);

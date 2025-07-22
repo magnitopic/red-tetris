@@ -48,14 +48,16 @@ export class Board {
       });
     });
     // Clean possible complete lines
-    return this.clearLines();
+    const linesCleared = this.clearLines();
+
+    return linesCleared;
   }
 
   clearLines() {
     let linesCleared = 0;
 
     for (let y = this.height - 1; y >= 0; y--) {
-      if (this.grid[y].every(cell => cell !== 0)) {
+      if (this.grid[y].every(cell => cell !== 0 && cell !== 8)) {
         // Clean complete lines
         this.grid.splice(y, 1);
 
@@ -66,6 +68,15 @@ export class Board {
       }
     }
     return linesCleared;
+  }
+
+  addGarbageLines(count) {
+    for (let i = 0; i < count; i++) {
+      this.grid.shift(); // clean top row
+
+      const garbageLine = new Array(this.width).fill(8); // ID 8 = garbage
+      this.grid.push(garbageLine);
+    }
   }
 
   getState() {

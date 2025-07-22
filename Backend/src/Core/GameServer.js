@@ -42,6 +42,7 @@ export default function createSocketServer(httpServer) {
                         started: false,
                         seed,
                         rng,
+                        io,
                         pieceQueue: [], // Pieces sequence
                         pieceIndex: 0,
                         playerGames: new Map(), // Map<playerId, Game>
@@ -136,21 +137,16 @@ export default function createSocketServer(httpServer) {
                             ).filter(([_, g]) => !g.gameOver);
                             if (stillPlaying.length === 0) {
                                 console.log('game finished: update:');
-                                await gameModel.updateByReference(
-                                    { finished: true },
-                                    { game_id: gameRoom.id }
-                                );
-                                io.to(room).emit('match_finished');
                             }
                         },
                         gameRoom,
-                        socket.userId
+                        socket.userId,
+                        socket.id
                     );
                     gameRoom.playerGames.set(socket.id, playerGame);
                     playerGame.startGravity();
 
                     socket.emit('game_started');
-                    //socket.emit("game_state", playerGame.getState());
                 }
             }
         );
@@ -209,7 +205,8 @@ export default function createSocketServer(httpServer) {
                         }
                     },
                     gameRoom,
-                    socket.userId
+                    socket.userId,
+                    socket.id
                 );
 
                 gameRoom.playerGames.set(playerId, playerGame);

@@ -7,6 +7,7 @@ CREATE TABLE users (
     profile_picture VARCHAR(255) DEFAULT NULL,
     oauth BOOLEAN DEFAULT FALSE,
     refresh_token VARCHAR(2048) DEFAULT NULL,
+    active_account BOOLEAN DEFAULT FALSE,
     reset_pass_token VARCHAR(2048) DEFAULT NULL
 );
 

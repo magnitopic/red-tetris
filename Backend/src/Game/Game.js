@@ -3,13 +3,14 @@ import { Board } from "./Board.js";
 import { TETROMINOES } from "./Tetrominoes.js";
 
 export default class Game {
-  constructor(width = 10, height = 22, onStateChange, OnGameOver, gameRoom, userId) {
+  constructor(width = 10, height = 22, onStateChange, OnGameOver, gameRoom, userId, socketId) {
     this.board = new Board(width, height);
     this.gameRoom = gameRoom;
     this.gameOver = false;
     this.onStateChange = onStateChange;
     this.OnGameOver = OnGameOver;
-     this.userId = userId;
+    this.userId = userId;
+    this.socketId = socketId
     
     if (!this.gameRoom.pieceQueue) this.gameRoom.pieceQueue = [];
     this.pieceIndex = 0;
@@ -71,7 +72,11 @@ export default class Game {
       this.currentPiece.y = newY;
     } else {
 			// Lock piece
-      this.board.lockPiece(this.currentPiece);
+      const clearedLines = this.board.lockPiece(this.currentPiece);
+
+      if (clearedLines > 0) {
+        this.sendGarbageToOthers(clearedLines);
+      }
 
 			// Spawn new piece
       this.currentPiece = this.spawnNextPiece();
@@ -101,7 +106,11 @@ export default class Game {
 
       } else {
         // Lock piece
-        this.board.lockPiece(this.currentPiece);
+        const clearedLines = this.board.lockPiece(this.currentPiece);
+
+        if (clearedLines > 0) {
+          this.sendGarbageToOthers(clearedLines);
+        }
         
         // Spawn new piece
         this.currentPiece = this.spawnNextPiece();
@@ -134,16 +143,29 @@ export default class Game {
   }
 
   startGravity(speed = 500) {
-  if (this.gravityInterval) return;
+    if (this.gravityInterval) return;
 
-  this.gravityInterval = setInterval(() => {
-    if (!this.gameOver) {
-      this.softDrop();
-    } else {
-      clearInterval(this.gravityInterval);
+    this.gravityInterval = setInterval(() => {
+      if (!this.gameOver) {
+        this.softDrop();
+      } else {
+        clearInterval(this.gravityInterval);
+      }
+    }, speed);
+  }
+
+  sendGarbageToOthers(linesCleared) {
+    const penaltyLines = linesCleared - 1;
+    if (penaltyLines <= 0) return;
+
+    for (const [playerId, otherGame] of this.gameRoom.playerGames.entries()) {
+      if (otherGame === this) continue;
+      otherGame.board.addGarbageLines(penaltyLines);
+      // Send socket-state to other players
+      this.gameRoom.io.to(otherGame.socketId).emit("game_state", otherGame.getState()); 
+      otherGame.onStateChange?.();
     }
-  }, speed);
-}
+  }
 
   getState() {
     return {
