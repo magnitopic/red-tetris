@@ -36,7 +36,7 @@ interface Spectrum {
 	playerName: string;
 }
 
-const index: React.FC = () => {
+const index: React.FC = ({socket}) => {
 	const [gameState, setGameState] = useState(null);
 	const [spectrums, setSpectrums] = useState<{
 		[playerId: string]: Spectrum;

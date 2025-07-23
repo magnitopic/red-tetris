@@ -3,6 +3,5 @@ export class Player {
     this.id = socketId;
     this.name = name;
     this.room = null;
-    this.isHost = isHost;
   }
 }

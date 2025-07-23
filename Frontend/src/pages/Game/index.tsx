@@ -14,6 +14,7 @@ const index: React.FC = () => {
 	const [isHost, setIsHost] = useState(false);
 	const [currentPlayers, setCurrentPlayers] = useState([]);
 	const [seed, setSeed] = useState("");
+	const [playing , setPlaying] = useState(false);
 	const playerName = user?.username;
 	const userId = user?.id;
 	const socket = io("http://localhost:3001");
@@ -55,12 +56,26 @@ const index: React.FC = () => {
 			window.history.pushState({}, "", `/game/${seed}`);
 			setSeed(seed);
 		});
+
+		socket.on("new_host", ({newHost}) =>{
+			console.log("newHost",newHost);
+			if (playerName == newHost)
+				setIsHost(true);
+		})
+
+		socket.on("game_started", ({}) => {
+			console.log("Starting!!!");
+			
+			setPlaying(true)
+		});
 	}, [playerName, userId]);
 
 	return (
 		<>
-			{isHost ? (
-				<HostScreen currentPlayers={currentPlayers} seed={seed} socket={socket} />
+			{playing ?
+			<GameScreen socket={socket} />:
+			isHost ? (
+				<HostScreen currentPlayers={currentPlayers} seed={seed} socket={socket} setPlaying={setPlaying} />
 			) : (
 				<main className="flex flex-1 justify-center items-center flex-col">
 					<h1 className="text-4xl font-bold mb-4">
