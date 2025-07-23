@@ -20,7 +20,7 @@ const index: React.FC = () => {
 	const BOARD_WIDTH = 10;
 	const BOARD_HEIGHT = 22;
 
-	useEffect(() => {
+	/* useEffect(() => {
 		if (!playerName) return;
 		const socket = io("http://localhost:3001");
 
@@ -68,11 +68,11 @@ const index: React.FC = () => {
 			window.history.pushState({}, "", `/game/${seed}`);
 			setSeed(seed);
 		});
-	}, [playerName, userId]);
+	}, [playerName, userId]); */
 
 	return (
 		<>
-			{isHost ? (
+			{/* {isHost ? (
 				<HostScreen currentPlayers={currentPlayers} seed={seed} />
 			) : (
 				<main className="flex flex-1 justify-center items-center flex-col">
@@ -80,7 +80,8 @@ const index: React.FC = () => {
 						Waiting for host to start...
 					</h1>
 				</main>
-			)}
+			)} */}
+			<GameScreen />
 		</>
 	);
 };

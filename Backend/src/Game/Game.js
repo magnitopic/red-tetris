@@ -42,7 +42,7 @@ export default class Game {
       console.error("Error: undefined piece", pieceId);
       return null;
     }
-
+    
     return Piece.spawn(this.board, pieceTemplate);
   }
 
@@ -53,6 +53,7 @@ export default class Game {
     if (this.board.isValidPosition(newX, this.currentPiece.y, this.currentPiece.shape)) {
       this.currentPiece.x = newX;
     }
+    this.emitState();
   }
 
   moveRight() {
@@ -62,6 +63,7 @@ export default class Game {
     if (this.board.isValidPosition(newX, this.currentPiece.y, this.currentPiece.shape)) {
       this.currentPiece.x = newX;
     }
+    this.emitState();
   }
 
   softDrop() {
@@ -89,6 +91,7 @@ export default class Game {
       }
     }
     this.onStateChange?.();
+    this.emitState();
   }
 
   async hardDrop() {
@@ -124,6 +127,7 @@ export default class Game {
         break;
       }
     }
+    this.emitState();
   }
 
   rotate() {
@@ -140,6 +144,7 @@ export default class Game {
 			this.currentPiece.rotation = nextRotation;
 			this.currentPiece.shape = newShape;
 		}
+    this.emitState();
   }
 
   startGravity(speed = 500) {
@@ -152,6 +157,7 @@ export default class Game {
         clearInterval(this.gravityInterval);
       }
     }, speed);
+    this.emitState();
   }
 
   sendGarbageToOthers(linesCleared) {
@@ -165,6 +171,17 @@ export default class Game {
       this.gameRoom.io.to(otherGame.socketId).emit("game_state", otherGame.getState()); 
       otherGame.onStateChange?.();
     }
+  }
+
+  emitState() {
+    this.onStateChange?.(this.getState());
+
+    // emit state to everyone in room
+    this.gameRoom.io.to(this.socketId).emit("game_state", {
+      playerId: this.socketId,
+      playerName: this.userName,
+      state: this.getState(),
+    });
   }
 
   getState() {

@@ -1,3 +1,6 @@
+/* import { RouterProvider } from "react-router-dom";
+import { router } from "./routes";
+import { AuthProvider } from "./context/AuthContext"; */
 import { useState, useEffect } from "react";
 import { io } from "socket.io-client";
 
@@ -28,9 +31,18 @@ const COLORS: { [key: number]: string } = {
 	8: "bg-gray-500 border-gray-700", // Garbage
 };
 
-const GameScreen: React.FC = () => {
+interface Spectrum {
+	state: GameState;
+	playerName: string;
+}
+
+const index: React.FC = () => {
 	const [gameState, setGameState] = useState(null);
+	const [spectrums, setSpectrums] = useState<{
+		[playerId: string]: Spectrum;
+	}>({});
 	const [playerName, setPlayerName] = useState("Guest");
+	const [socketId, setSocketId] = useState("");
 	const [userId, setUserId] = useState(null);
 
 	useEffect(() => {
@@ -49,7 +61,7 @@ const GameScreen: React.FC = () => {
 	}, []);
 
 	useEffect(() => {
-		if (!playerName) return;
+		if (!playerName || !userId) return;
 		const socket = io("http://localhost:3001");
 
 		socket.on("connect", () => {
@@ -64,17 +76,29 @@ const GameScreen: React.FC = () => {
 			BOARD_HEIGHT,
 		});
 
-		socket.on("joined_room", ({ host, players, seed }) => {
+		socket.on("joined_room", ({ host, players, socketId }) => {
+			setSocketId(socketId);
 			console.log(`Is host: ${host}`);
 			console.log(`Current players: ${players}`);
-			console.log(`Current seed: ${seed}`);
+
+			if (host) {
+				socket.emit("start_game");
+			}
 		});
 
-		socket.emit("start_game");
-
-		socket.on("game_state", (state: GameState) => {
-			setGameState(state);
-		});
+		socket.on(
+			"game_state",
+			({ playerId, state, playerName: senderName }) => {
+				if (playerId === socket.id) {
+					setGameState(state);
+				} else {
+					setSpectrums((prev) => ({
+						...prev,
+						[playerId]: { state, playerName: senderName },
+					}));
+				}
+			}
+		);
 
 		// Events
 		const onKeyDown = (e: KeyboardEvent) => {
@@ -93,7 +117,7 @@ const GameScreen: React.FC = () => {
 			socket.disconnect();
 			window.removeEventListener("keydown", onKeyDown);
 		};
-	}, [playerName]);
+	}, [playerName, userId]); //TODO delete userId?
 
 	if (!gameState) {
 		return (
@@ -125,8 +149,10 @@ const GameScreen: React.FC = () => {
 			});
 		});
 	}
+
 	return (
 		<div className="flex justify-center mt-8">
+			{/*Main Board */}
 			<div
 				className="grid grid-cols-10 gap-0.5 bg-primary-dark p-1 rounded"
 				style={{ width: 300, height: 660 }}
@@ -149,7 +175,49 @@ const GameScreen: React.FC = () => {
 						/>
 					);
 				})}
-			</div>
+			</div>{" "}
+			{/* End Main Board */}
+			<div className="flex flex-col gap-2 m-4 w-[180px]">
+				{" "}
+				{/* Spectrums Boards */}
+				{Object.entries(spectrums).map(([id, spec]) => {
+					if (
+						!Array.isArray(spec.state?.board) ||
+						!Array.isArray(spec.state.board[0])
+					) {
+						return null;
+					}
+
+					return (
+						<div key={id} className="border p-1">
+							<div className="text-md text-center text-gray-100 mb-1">
+								{spec.playerName}
+							</div>
+							<div className="grid grid-cols-10 gap-0.5">
+								{spec.state.board.flat().map((cell, idx) => {
+									const y = Math.floor(idx / BOARD_WIDTH);
+									return (
+										<div
+											key={idx}
+											className={`w-3 h-3 ${
+												cell
+													? `${
+															COLORS[cell] ||
+															"bg-white border-white"
+													  }`
+													: y < 2
+													? ""
+													: "bg-gray-900 border border-gray-700"
+											}`}
+										/>
+									);
+								})}
+							</div>
+						</div>
+					);
+				})}
+			</div>{" "}
+			{/* End Spectrums Boards */}
 			{gameOver && (
 				<div className="mt-4 text-red-600 text-2xl font-bold">
 					Game Over
@@ -159,4 +227,4 @@ const GameScreen: React.FC = () => {
 	);
 };
 
-export default GameScreen;
+export default index;
