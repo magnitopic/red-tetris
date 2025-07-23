@@ -61,30 +61,6 @@ const index: React.FC = () => {
 	}, []);
 
 	useEffect(() => {
-		if (!playerName || !userId) return;
-		const socket = io("http://localhost:3001");
-
-		socket.on("connect", () => {
-			console.log("Connected to server");
-		});
-
-		socket.emit("join_room", {
-			room: "room123",
-			playerName: playerName,
-			userId: userId,
-			BOARD_WIDTH,
-			BOARD_HEIGHT,
-		});
-
-		socket.on("joined_room", ({ host, players, socketId }) => {
-			setSocketId(socketId);
-			console.log(`Is host: ${host}`);
-			console.log(`Current players: ${players}`);
-
-			if (host) {
-				socket.emit("start_game");
-			}
-		});
 
 		socket.on(
 			"game_state",

@@ -30,11 +30,16 @@ export default function createSocketServer(httpServer) {
                 socket.userId = userId;
                 console.log(`Player ${playerName} joined room: ${room}`);
 
+                console.log("Room:", room); 
+                console.log(typeof room);
                 let gameRoom = games.get(room);
 
                 if (!gameRoom) {
-                    const seed = Math.floor(100000 + Math.random() * 900000);
+                    const seed = room;
                     const rng = seedrandom(seed.toString());
+
+                    console.log("seed:",seed);
+                    console.log(typeof seed);
 
                     gameRoom = {
                         hostId: socket.id,
@@ -71,7 +76,8 @@ export default function createSocketServer(httpServer) {
                 }
 
                 // Save player
-                const player = new Player(socket.id, playerName);
+                let isHost = players.size === 0? true:false;
+                const player = new Player(socket.id, playerName, isHost);
                 players.set(socket.id, player);
 
                 // POST new game-player
@@ -96,8 +102,15 @@ export default function createSocketServer(httpServer) {
                 // Join socket.io room
                 socket.join(room);
 
+
+                let hoster = false;
+                players.forEach(e => {
+                    if (e.isHost && e.name === playerName)
+                        hoster = true;
+                });
+
                 socket.emit('joined_room', {
-                    host: gameRoom.hostId === socket.id,
+                    host: hoster,
                     players: Array.from(gameRoom.players).map(
                         (id) => players.get(id)?.name || id
                     ),

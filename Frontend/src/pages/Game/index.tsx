@@ -9,53 +9,40 @@ import { io } from "socket.io-client";
 import { useParams } from "react-router-dom";
 
 const index: React.FC = () => {
-	const { clientRoomId } = useParams();
+	let { clientRoomId } = useParams();
 	const { user } = useAuth();
 	const [isHost, setIsHost] = useState(false);
 	const [currentPlayers, setCurrentPlayers] = useState([]);
 	const [seed, setSeed] = useState("");
 	const playerName = user?.username;
 	const userId = user?.id;
-
+	const socket = io("http://localhost:3001");
+	
 	const BOARD_WIDTH = 10;
 	const BOARD_HEIGHT = 22;
 
-	/* useEffect(() => {
+	useEffect(() => {
 		if (!playerName) return;
-		const socket = io("http://localhost:3001");
 
 		socket.on("connect", () => {
 			console.log("Connected to server");
 		});
 
-		if (clientRoomId === "new") {
-			socket.emit("create_room", {
-				playerName: playerName,
-				userId: userId,
-				width: BOARD_WIDTH,
-				height: BOARD_HEIGHT,
-			});
-			console.log("Creating new room");
-		} else {
-			socket.emit("join_room", {
-				room: clientRoomId,
-				playerName: playerName,
-				userId: userId,
-				width: BOARD_WIDTH,
-				height: BOARD_HEIGHT,
-			});
-		}
+		if (clientRoomId === "new")
+			clientRoomId = Math.floor(100000 + Math.random() * 900000);
+		else
+			clientRoomId = parseInt(clientRoomId);
 
-		socket.on("room_created", ({ room, host, players, seed }) => {
-			console.log(`Room created: ${room}`);
-			console.log(`Is host: ${host}`);
-			console.log(`Current players: ${players}`);
-			console.log(`Current seed: ${seed}`);
 
-			setIsHost(host);
-			setCurrentPlayers(players);
-			window.history.pushState({}, "", `/game/${room}`);
-			setSeed(seed);
+		console.log("clientROOM:",clientRoomId);
+		
+
+		socket.emit("join_room", {
+			room: clientRoomId,
+			playerName: playerName,
+			userId: userId,
+			width: BOARD_WIDTH,
+			height: BOARD_HEIGHT,
 		});
 
 		socket.on("joined_room", ({ host, players, seed }) => {
@@ -68,20 +55,19 @@ const index: React.FC = () => {
 			window.history.pushState({}, "", `/game/${seed}`);
 			setSeed(seed);
 		});
-	}, [playerName, userId]); */
+	}, [playerName, userId]);
 
 	return (
 		<>
-			{/* {isHost ? (
-				<HostScreen currentPlayers={currentPlayers} seed={seed} />
+			{isHost ? (
+				<HostScreen currentPlayers={currentPlayers} seed={seed} socket={socket} />
 			) : (
 				<main className="flex flex-1 justify-center items-center flex-col">
 					<h1 className="text-4xl font-bold mb-4">
 						Waiting for host to start...
 					</h1>
 				</main>
-			)} */}
-			<GameScreen />
+			)}
 		</>
 	);
 };
