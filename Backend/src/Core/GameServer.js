@@ -24,7 +24,7 @@ export default function createSocketServer(httpServer) {
   io.on("connection", async (socket) => {
     console.log(`🔌 New client connected: ${socket.id}`);
 
-	  socket.on("join_room", async ({ room, playerName, userId, width = 10, height = 22 }) => {
+	  socket.on("join_room", async ({ room, playerName, userId, width = 10, height = 22, speed = 500 }) => {
       socket.userId = userId;
       console.log(`Player ${playerName} joined room: ${room}`);
 
@@ -41,6 +41,9 @@ export default function createSocketServer(httpServer) {
           seed,
           rng,
           io,
+          width,
+          height,
+          speed,
           pieceQueue: [],    // Pieces sequence
           pieceIndex: 0,
           playerGames: new Map() // Map<playerId, Game>
@@ -130,7 +133,7 @@ export default function createSocketServer(httpServer) {
           socket.id
         );
         gameRoom.playerGames.set(socket.id, playerGame);
-        playerGame.startGravity();
+        playerGame.startGravity(speed);
 
         // send game_state to user
         io.to(socket.id).emit("game_state", {
@@ -176,8 +179,10 @@ export default function createSocketServer(httpServer) {
 
       gameRoom.started = true;
 
+      const { width, height, speed } = gameRoom;  
+      
       for (const playerId of gameRoom.players) {
-        const playerGame = new Game( 10, 22, () => 
+        const playerGame = new Game( width, height, () => 
           { 
             const player = players.get(playerId);
             io.to(playerId).emit("game_state", {
@@ -208,7 +213,7 @@ export default function createSocketServer(httpServer) {
         );
 
         gameRoom.playerGames.set(playerId, playerGame);
-        playerGame.startGravity();
+        playerGame.startGravity(speed);
 
         io.to(playerId).emit("game_state", {
           playerId,

@@ -72,6 +72,7 @@ const index: React.FC = () => {
 			userId: userId,
 			BOARD_WIDTH,
 			BOARD_HEIGHT,
+			speed: 500, // Default speed
 		});
 
 		socket.on("joined_room", ({ host, players, socketId }) => {
@@ -125,7 +126,7 @@ const index: React.FC = () => {
 
 
 
-	const { board, currentPiece, gameOver } = gameState;
+	const { board, currentPiece, gameOver, score } = gameState;
 
 	const boardWithPiece = board.map((row) => [...row]);
 
@@ -151,6 +152,7 @@ const index: React.FC = () => {
 	return (
 		<div className="flex justify-center mt-8">
 			{/*Main Board */}
+			<div className="text-2xl text-center text-whitep-1 mb-1">score: {score}</div>
 			<div 
 				className="grid grid-cols-10 gap-0.5 bg-primary-dark p-1 rounded"
 				style={{ width: 300, height: 660 }}

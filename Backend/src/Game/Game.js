@@ -11,7 +11,7 @@ export default class Game {
     this.OnGameOver = OnGameOver;
     this.userId = userId;
     this.socketId = socketId
-    
+    this.score = 0;
     if (!this.gameRoom.pieceQueue) this.gameRoom.pieceQueue = [];
     this.pieceIndex = 0;
     this.currentPiece = this.spawnNextPiece();
@@ -78,6 +78,7 @@ export default class Game {
 
       if (clearedLines > 0) {
         this.sendGarbageToOthers(clearedLines);
+        this.score += this.getPoints(clearedLines);
       }
 
 			// Spawn new piece
@@ -113,6 +114,7 @@ export default class Game {
 
         if (clearedLines > 0) {
           this.sendGarbageToOthers(clearedLines);
+          this.score += this.getPoints(clearedLines);
         }
         
         // Spawn new piece
@@ -173,6 +175,16 @@ export default class Game {
     }
   }
 
+  getPoints(linesCleared) {
+    const LINE_POINTS = {
+      1: 100,
+      2: 300,
+      3: 500,
+      4: 800
+    };
+    return LINE_POINTS[linesCleared] || 0;
+  }
+
   emitState() {
     this.onStateChange?.(this.getState());
 
@@ -188,8 +200,8 @@ export default class Game {
     return {
       board: this.board.getState(),
       currentPiece: this.currentPiece,
-      gameOver: this.gameOver
-      
+      gameOver: this.gameOver,
+      score: this.score
     };
   }
 }
