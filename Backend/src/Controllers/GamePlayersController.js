@@ -26,7 +26,7 @@ export default class GamePlayersController {
 	}
 
 	static async createGamePlayer(req, res) {
-		const { user_id, game_id, score, position } = req.body;
+		const { user_id, game_id, score } = req.body;
 	
 		if (!user_id || !game_id) {
 			return res.status(400).json({ msg: 'Missing user_id or game_id' });
@@ -37,7 +37,6 @@ export default class GamePlayersController {
 				user_id,
 				game_id,
 				score,
-				position
 			}
 		});
 	
@@ -46,14 +45,14 @@ export default class GamePlayersController {
 	};
 	
 	static async updateGamePlayer(req, res) {
-		const { user_id, game_id, score, position } = req.body;
+		const { user_id, game_id, score } = req.body;
 	
 		if (!user_id || !game_id) {
 			return res.status(400).json({ msg: 'Missing user_id or game_id' });
 		}
 	
 		const result = await gamePlayersModel.updateByReference(
-			{ score, position },
+			{ score },
 			{ user_id, game_id }
 		);
 	

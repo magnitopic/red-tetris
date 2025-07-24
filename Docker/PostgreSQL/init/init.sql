@@ -22,7 +22,6 @@ CREATE TABLE game_players (
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     game_id UUID REFERENCES games(id) ON DELETE CASCADE,
     score INTEGER NOT NULL,
-    position INTEGER NOT NULL,
     UNIQUE(game_id, user_id)
 );
 

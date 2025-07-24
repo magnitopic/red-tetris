@@ -88,7 +88,7 @@ export default class Game {
       if (this.currentPiece === null) {
         this.gameOver = true;
         console.log("Game over!!!")
-        this.OnGameOver?.(this.userId);
+        this.OnGameOver?.(this.userId, this.score);
       }
     }
     this.onStateChange?.();
@@ -124,7 +124,7 @@ export default class Game {
         if (this.currentPiece === null) {
           this.gameOver = true;
           console.log("Game over!!!")
-          this.OnGameOver?.(this.userId);
+          this.OnGameOver?.(this.userId, this.score);
         }
         break;
       }

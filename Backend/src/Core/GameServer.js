@@ -80,7 +80,6 @@ export default function createSocketServer(httpServer) {
             game_id: gameRoom.id,
             user_id: userId,
             score: 0,
-            position: 0
           }
         });
         console.log(`game_players created for ${playerName}`);
@@ -113,11 +112,11 @@ export default function createSocketServer(httpServer) {
         const playerGame = new Game(
           width, height,
           () => { io.to(socket.id).emit("game_state", playerGame.getState()); },
-          async () => {
+          async (userId, score) => {
             console.log(`Player ${socket.id}: game over.`);
 
             await gamePlayersModel.updateByReference(
-              { score: 42, position: 1 }, 
+              { score: score }, 
               { game_id: gameRoom.id, user_id: userId });
 
             io.to(socket.id).emit("game_over");
@@ -180,7 +179,7 @@ export default function createSocketServer(httpServer) {
       gameRoom.started = true;
 
       const { width, height, speed } = gameRoom;  
-      
+
       for (const playerId of gameRoom.players) {
         const playerGame = new Game( width, height, () => 
           { 
@@ -190,12 +189,12 @@ export default function createSocketServer(httpServer) {
             playerName: player?.name || "Unknown",
             state: playerGame.getState()
           }); 
-          }, async () => {
-            console.log(`Player ${playerId} game over.`);
+          }, async (userId, score) => {
+            console.log(`Player ${player.name} game over.`);
 
             await gamePlayersModel.updateByReference(
-              {score: 21, position:3},
-              { game_id: gameRoom.id, user_id: socket.userId }
+              {score: score},
+              { game_id: gameRoom.id, user_id: userId }
             );
 
             io.to(playerId).emit("game_over");
