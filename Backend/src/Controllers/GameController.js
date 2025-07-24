@@ -41,7 +41,7 @@ export default class GameController {
 			{ game_seed: seed }, true
 		);
 
-		if (!result.game_seed) return res.status(404).json({ msg: 'No game found' });
+		if (!result || !result.game_seed) return res.status(404).json({ msg: 'No game found' });
 			return res.json(result);
     }
 }

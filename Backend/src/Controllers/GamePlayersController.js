@@ -62,4 +62,12 @@ export default class GamePlayersController {
 	
 		return res.json(result[0]);
 	}
+
+	static async getTopPlayers(req, res) {
+		const topPlayers = await gamePlayersModel.getTopPlayers(10);
+		if (!topPlayers) {
+			return res.status(500).json({error: 'Error retrieving Top Players'})
+		}
+		res.json(topPlayers);
+	}
 };
