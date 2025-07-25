@@ -14,11 +14,11 @@ const index: React.FC = () => {
 	const [isHost, setIsHost] = useState(false);
 	const [currentPlayers, setCurrentPlayers] = useState([]);
 	const [seed, setSeed] = useState("");
-	const [playing , setPlaying] = useState(false);
+	const [playing, setPlaying] = useState(false);
 	const playerName = user?.username;
 	const userId = user?.id;
 	const socket = io("http://localhost:3001");
-	
+
 	const BOARD_WIDTH = 10;
 	const BOARD_HEIGHT = 22;
 
@@ -31,12 +31,9 @@ const index: React.FC = () => {
 
 		if (clientRoomId === "new")
 			clientRoomId = Math.floor(100000 + Math.random() * 900000);
-		else
-			clientRoomId = parseInt(clientRoomId);
+		else clientRoomId = parseInt(clientRoomId);
 
-
-		console.log("clientROOM:",clientRoomId);
-		
+		console.log("clientROOM:", clientRoomId);
 
 		socket.emit("join_room", {
 			room: clientRoomId,
@@ -57,25 +54,46 @@ const index: React.FC = () => {
 			setSeed(seed);
 		});
 
-		socket.on("new_host", ({newHost}) =>{
-			console.log("newHost",newHost);
-			if (playerName == newHost)
-				setIsHost(true);
-		})
+		socket.on("new_host", ({ newHost, players }) => {
+			console.log("newHost", newHost);
+			if (playerName == newHost) setIsHost(true);
+			setCurrentPlayers(players);
+			console.log("new player list:", players);
+		});
 
 		socket.on("game_started", ({}) => {
 			console.log("Starting!!!");
-			
-			setPlaying(true)
+
+			setPlaying(true);
+		});
+
+		socket.on("player_joined", ({ playerId, playerName }) => {
+			console.log(`Player joined: ${playerName}`);
+			setCurrentPlayers((prev) => [
+				...prev,
+				{ id: playerId, name: playerName },
+			]);
+		});
+
+		socket.on("player_left", ({ playerId }) => {
+			console.log(`Player left: ${playerId}`);
+			setCurrentPlayers((prev) =>
+				prev.filter((player) => player.id !== playerId)
+			);
 		});
 	}, [playerName, userId]);
 
 	return (
 		<>
-			{playing ?
-			<GameScreen socket={socket} />:
-			isHost ? (
-				<HostScreen currentPlayers={currentPlayers} seed={seed} socket={socket} setPlaying={setPlaying} />
+			{playing ? (
+				<GameScreen socket={socket} />
+			) : isHost ? (
+				<HostScreen
+					currentPlayers={currentPlayers}
+					seed={seed}
+					socket={socket}
+					setPlaying={setPlaying}
+				/>
 			) : (
 				<main className="flex flex-1 justify-center items-center flex-col">
 					<h1 className="text-4xl font-bold mb-4">
