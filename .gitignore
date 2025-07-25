@@ -77,3 +77,6 @@ backend/build/
 dist/
 uploads
 downloads
+
+Backend/.nyc_output
+Backend/coverage
