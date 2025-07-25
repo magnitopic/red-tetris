@@ -1,7 +1,13 @@
 import React from "react";
 import RegularButton from "../../components/common/RegularButton";
 
-const HostScreen: React.FC = ({ currentPlayers, seed, socket, setPlaying }) => {
+const HostScreen: React.FC = ({
+	currentPlayers,
+	seed,
+	socket,
+	setPlaying,
+	userId,
+}) => {
 	return (
 		<main className="flex flex-1 justify-center items-center flex-col w-full my-10">
 			<h1 className="text-4xl font-bold mb-4">You are the game host!</h1>
@@ -27,8 +33,10 @@ const HostScreen: React.FC = ({ currentPlayers, seed, socket, setPlaying }) => {
 					type="button"
 					callback={() => {
 						console.log("I wanna start!!!");
-						
-						socket.emit("start_game");
+
+						socket.emit("start_game", {
+							userId: userId,
+						});
 					}}
 				/>
 			</section>

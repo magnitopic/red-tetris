@@ -37,7 +37,7 @@ export default function createSocketServer(httpServer) {
                     const rng = seedrandom(seed.toString());
 
                     gameRoom = {
-                        hostId: socket.id,
+                        hostId: userId,
                         players: new Set(),
                         started: false,
                         seed,
@@ -71,7 +71,10 @@ export default function createSocketServer(httpServer) {
 
                 // Save player
                 const player = new Player(userId, playerName, socket.id, room);
-                players.set(socket.id, player);
+                players.set(userId, player);
+                console.log(
+                    `Player added to map. Socket ID: ${socket.id}, Players map size: ${players.size}`
+                );
 
                 // POST new game-player
                 try {
@@ -90,13 +93,13 @@ export default function createSocketServer(httpServer) {
                 }
 
                 // Track in room
-                gameRoom.players.add(socket.id);
+                gameRoom.players.add(userId);
 
                 // Join socket.io room
                 socket.join(room);
 
                 socket.emit('joined_room', {
-                    host: gameRoom.hostId === socket.id,
+                    host: gameRoom.hostId === userId,
                     players: Array.from(gameRoom.players).map(
                         (id) => players.get(id)?.name || id
                     ),
@@ -174,14 +177,14 @@ export default function createSocketServer(httpServer) {
         );
 
         // Host starts game
-        socket.on('start_game', () => {
-            const player = players.get(socket.id);
+        socket.on('start_game', ({ userId }) => {
+            const player = players.get(userId);
             if (!player) return;
 
             const gameRoom = games.get(player.room);
             if (!gameRoom) return;
 
-            if (gameRoom.hostId !== socket.id) {
+            if (gameRoom.hostId !== userId) {
                 socket.emit('error', 'Only host can start the game.');
                 return;
             }

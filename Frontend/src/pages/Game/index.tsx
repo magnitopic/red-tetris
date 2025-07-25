@@ -15,6 +15,12 @@ const index: React.FC = () => {
 	const [currentPlayers, setCurrentPlayers] = useState([]);
 	const [seed, setSeed] = useState("");
 	const [playing, setPlaying] = useState(false);
+
+	const [gameState, setGameState] = useState(null);
+	const [spectrums, setSpectrums] = useState<{
+		[playerId: string]: Spectrum;
+	}>({});
+
 	const playerName = user?.username;
 	const userId = user?.id;
 	const socket = io("http://localhost:3001");
@@ -61,9 +67,7 @@ const index: React.FC = () => {
 			console.log("new player list:", players);
 		});
 
-		socket.on("game_started", ({}) => {
-			console.log("Starting!!!");
-
+		socket.on("game_started", () => {
 			setPlaying(true);
 		});
 
@@ -81,18 +85,63 @@ const index: React.FC = () => {
 				prev.filter((player) => player.id !== playerId)
 			);
 		});
-	}, [playerName, userId]);
+
+		socket.on(
+			"game_state",
+			({ playerId, state, playerName: senderName }) => {
+				console.log("gameState!");
+
+				if (playerId === socket.id) {
+					setGameState(state);
+				} else {
+					setSpectrums((prev) => ({
+						...prev,
+						[playerId]: { state, playerName: senderName },
+					}));
+				}
+			}
+		);
+
+		const onKeyDown = (e: KeyboardEvent) => {
+			if (!socket) return;
+			if (e.key === "ArrowLeft") socket.emit("move_left");
+			if (e.key === "ArrowRight") socket.emit("move_right");
+			if (e.key === "ArrowUp") socket.emit("rotate");
+			if (e.key === "ArrowDown") socket.emit("soft_drop");
+			if (e.key === " ") socket.emit("hard_drop");
+			if (e.key === "Escape") socket.disconnect();
+		};
+
+		window.addEventListener("keydown", onKeyDown);
+
+		return () => {
+			socket.disconnect();
+			window.removeEventListener("keydown", onKeyDown);
+		};
+	}, [playerName, userId, playing]);
+
+	console.log("gameState", gameState);
+	console.log("spectrums", spectrums);
 
 	return (
 		<>
-			{playing ? (
-				<GameScreen socket={socket} />
+			{playing && !gameState ? (
+				<div className="text-center mt-10 text-xl text-gray-500">
+					Loading game here...
+				</div>
+			) : playing && gameState && spectrums ? (
+				<GameScreen
+					socket={socket}
+					spectrums={spectrums}
+					gameState={gameState}
+				/>
 			) : isHost ? (
 				<HostScreen
 					currentPlayers={currentPlayers}
 					seed={seed}
 					socket={socket}
 					setPlaying={setPlaying}
+					userId={userId}
 				/>
 			) : (
 				<main className="flex flex-1 justify-center items-center flex-col">

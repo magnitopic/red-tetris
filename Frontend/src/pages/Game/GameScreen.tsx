@@ -36,13 +36,8 @@ interface Spectrum {
 	playerName: string;
 }
 
-const index: React.FC = ({socket}) => {
-	const [gameState, setGameState] = useState(null);
-	const [spectrums, setSpectrums] = useState<{
-		[playerId: string]: Spectrum;
-	}>({});
+const index: React.FC = ({ socket, spectrums, gameState }) => {
 	const [playerName, setPlayerName] = useState("Guest");
-	const [socketId, setSocketId] = useState("");
 	const [userId, setUserId] = useState(null);
 
 	useEffect(() => {
@@ -61,39 +56,8 @@ const index: React.FC = ({socket}) => {
 	}, []);
 
 	useEffect(() => {
-
-		socket.on(
-			"game_state",
-			({ playerId, state, playerName: senderName }) => {
-				if (playerId === socket.id) {
-					setGameState(state);
-				} else {
-					setSpectrums((prev) => ({
-						...prev,
-						[playerId]: { state, playerName: senderName },
-					}));
-				}
-			}
-		);
-
-		// Events
-		const onKeyDown = (e: KeyboardEvent) => {
-			if (!socket) return;
-			if (e.key === "ArrowLeft") socket.emit("move_left");
-			if (e.key === "ArrowRight") socket.emit("move_right");
-			if (e.key === "ArrowUp") socket.emit("rotate");
-			if (e.key === "ArrowDown") socket.emit("soft_drop");
-			if (e.key === " ") socket.emit("hard_drop");
-			if (e.key === "Escape") socket.disconnect();
-		};
-
-		window.addEventListener("keydown", onKeyDown);
-
-		return () => {
-			socket.disconnect();
-			window.removeEventListener("keydown", onKeyDown);
-		};
-	}, [playerName, userId]); //TODO delete userId?
+		console.log("reload");
+	}, [gameState, spectrums]);
 
 	if (!gameState) {
 		return (
