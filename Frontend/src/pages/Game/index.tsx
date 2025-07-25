@@ -4,7 +4,7 @@ import { AuthProvider } from "./context/AuthContext"; */
 import GameScreen from "./GameScreen";
 import HostScreen from "./HostScreen";
 import { useAuth } from "../../context/AuthContext";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { io } from "socket.io-client";
 import { useParams } from "react-router-dom";
 
@@ -15,6 +15,7 @@ const index: React.FC = () => {
 	const [currentPlayers, setCurrentPlayers] = useState([]);
 	const [seed, setSeed] = useState("");
 	const [playing, setPlaying] = useState(false);
+	const socketRef = useRef(null);
 
 	const [gameState, setGameState] = useState(null);
 	const [spectrums, setSpectrums] = useState<{
@@ -23,13 +24,16 @@ const index: React.FC = () => {
 
 	const playerName = user?.username;
 	const userId = user?.id;
-	const socket = io("http://localhost:3001");
 
 	const BOARD_WIDTH = 10;
 	const BOARD_HEIGHT = 22;
 
 	useEffect(() => {
-		if (!playerName) return;
+		if (!playerName || !userId) return;
+
+		// Create socket connection
+		const socket = io("http://localhost:3001");
+		socketRef.current = socket;
 
 		socket.on("connect", () => {
 			console.log("Connected to server");
@@ -89,11 +93,13 @@ const index: React.FC = () => {
 		socket.on(
 			"game_state",
 			({ playerId, state, playerName: senderName }) => {
-				console.log("gameState!");
+				console.log("gameState received for player:", playerId);
 
 				if (playerId === socket.id) {
+					console.log("Setting my game state");
 					setGameState(state);
 				} else {
+					console.log("Setting spectrum for:", senderName);
 					setSpectrums((prev) => ({
 						...prev,
 						[playerId]: { state, playerName: senderName },
@@ -102,8 +108,38 @@ const index: React.FC = () => {
 			}
 		);
 
+		return () => {
+			socket.disconnect();
+		};
+	}, [playerName, userId]);
+
+	useEffect(() => {
+		const socket = socketRef.current;
+		if (!socket || !playing) return;
+
 		const onKeyDown = (e: KeyboardEvent) => {
-			if (!socket) return;
+			console.log(
+				"Key pressed:",
+				e.key,
+				"Playing:",
+				playing,
+				"Socket connected:",
+				socket.connected
+			);
+
+			// Prevent default behavior for game keys
+			if (
+				[
+					"ArrowLeft",
+					"ArrowRight",
+					"ArrowUp",
+					"ArrowDown",
+					" ",
+				].includes(e.key)
+			) {
+				e.preventDefault();
+			}
+
 			if (e.key === "ArrowLeft") socket.emit("move_left");
 			if (e.key === "ArrowRight") socket.emit("move_right");
 			if (e.key === "ArrowUp") socket.emit("rotate");
@@ -115,10 +151,9 @@ const index: React.FC = () => {
 		window.addEventListener("keydown", onKeyDown);
 
 		return () => {
-			socket.disconnect();
 			window.removeEventListener("keydown", onKeyDown);
 		};
-	}, [playerName, userId, playing]);
+	}, [playing]);
 
 	console.log("gameState", gameState);
 	console.log("spectrums", spectrums);
@@ -129,9 +164,9 @@ const index: React.FC = () => {
 				<div className="text-center mt-10 text-xl text-gray-500">
 					Loading game here...
 				</div>
-			) : playing && gameState && spectrums ? (
+			) : playing && gameState ? (
 				<GameScreen
-					socket={socket}
+					socket={socketRef.current}
 					spectrums={spectrums}
 					gameState={gameState}
 				/>
@@ -139,7 +174,7 @@ const index: React.FC = () => {
 				<HostScreen
 					currentPlayers={currentPlayers}
 					seed={seed}
-					socket={socket}
+					socket={socketRef.current}
 					setPlaying={setPlaying}
 					userId={userId}
 				/>

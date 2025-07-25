@@ -20,6 +20,7 @@ export default function createSocketServer(httpServer) {
     // Save games by client-id
     const players = new Map();
     const games = new Map();
+    const socketToUserId = new Map(); // Track socket.id -> userId mapping
 
     io.on('connection', async (socket) => {
         console.log(`🔌 New client connected: ${socket.id}`);
@@ -28,6 +29,7 @@ export default function createSocketServer(httpServer) {
             'join_room',
             async ({ room, playerName, userId, width = 10, height = 22 }) => {
                 socket.userId = userId;
+                socketToUserId.set(socket.id, userId);
                 console.log(`Player ${playerName} joined room: ${room}`);
 
                 let gameRoom = games.get(room);
@@ -45,7 +47,7 @@ export default function createSocketServer(httpServer) {
                         io,
                         pieceQueue: [], // Pieces sequence
                         pieceIndex: 0,
-                        playerGames: new Map(), // Map<playerId, Game>
+                        playerGames: new Map(), // Map<userId, Game>
                     };
 
                     games.set(room, gameRoom);
@@ -78,7 +80,6 @@ export default function createSocketServer(httpServer) {
 
                 // POST new game-player
                 try {
-                    // TODO -> error cause no game id exists. Must create game in db first
                     await gamePlayersModel.create({
                         input: {
                             game_id: room,
@@ -119,10 +120,11 @@ export default function createSocketServer(httpServer) {
                         width,
                         height,
                         () => {
-                            io.to(socket.id).emit(
-                                'game_state',
-                                playerGame.getState()
-                            );
+                            io.to(socket.id).emit('game_state', {
+                                playerId: socket.id,
+                                playerName: player.name,
+                                state: playerGame.getState(),
+                            });
                         },
                         async () => {
                             console.log(`Player ${socket.id}: game over.`);
@@ -143,10 +145,10 @@ export default function createSocketServer(httpServer) {
                             }
                         },
                         gameRoom,
-                        socket.userId,
+                        userId,
                         socket.id
                     );
-                    gameRoom.playerGames.set(socket.id, playerGame);
+                    gameRoom.playerGames.set(userId, playerGame);
                     playerGame.startGravity();
 
                     // send game_state to user
@@ -158,13 +160,13 @@ export default function createSocketServer(httpServer) {
 
                     // send game_state to other players
                     for (const [
-                        otherPlayerId,
+                        otherUserId,
                         otherPlayerGame,
                     ] of gameRoom.playerGames) {
-                        if (otherPlayerId !== socket.id) {
-                            const otherPlayer = players.get(otherPlayerId);
+                        if (otherUserId !== userId) {
+                            const otherPlayer = players.get(otherUserId);
                             io.to(socket.id).emit('game_state', {
-                                playerId: otherPlayerId,
+                                playerId: otherPlayer?.socketId || otherUserId,
                                 playerName: otherPlayer?.name || 'Unknown',
                                 state: otherPlayerGame.getState(),
                             });
@@ -196,15 +198,19 @@ export default function createSocketServer(httpServer) {
 
             gameRoom.started = true;
 
+            // Create games for all players
             for (const playerId of gameRoom.players) {
+                const player = players.get(playerId);
+                if (!player) continue;
+
                 const playerGame = new Game(
                     10,
                     22,
                     () => {
-                        const player = players.get(playerId);
-                        io.to(playerId).emit('game_state', {
-                            playerId,
-                            playerName: player?.name || 'Unknown',
+                        // Send to all players in the room
+                        io.to(player.room).emit('game_state', {
+                            playerId: player.socketId,
+                            playerName: player.name,
                             state: playerGame.getState(),
                         });
                     },
@@ -213,10 +219,10 @@ export default function createSocketServer(httpServer) {
 
                         await gamePlayersModel.updateByReference(
                             { score: 21, position: 3 },
-                            { game_id: gameRoom.id, user_id: socket.userId }
+                            { game_id: gameRoom.seed, user_id: playerId }
                         );
 
-                        io.to(playerId).emit('game_over');
+                        io.to(player.socketId).emit('game_over');
 
                         // Check if everyone finished
                         const stillPlaying = Array.from(
@@ -225,21 +231,22 @@ export default function createSocketServer(httpServer) {
                         if (stillPlaying.length === 0) {
                             await gameModel.updateByReference(
                                 { finished: true },
-                                { id: gameRoom.id }
+                                { game_seed: gameRoom.seed }
                             );
                             io.to(player.room).emit('match_finished');
                         }
                     },
                     gameRoom,
-                    socket.userId,
-                    socket.id
+                    playerId,
+                    player.socketId
                 );
 
                 gameRoom.playerGames.set(playerId, playerGame);
                 playerGame.startGravity();
 
-                io.to(playerId).emit('game_state', {
-                    playerId,
+                // Send initial game state to the specific player
+                io.to(player.socketId).emit('game_state', {
+                    playerId: player.socketId,
                     playerName: player.name,
                     state: playerGame.getState(),
                 });
@@ -248,7 +255,7 @@ export default function createSocketServer(httpServer) {
             io.to(player.room).emit('game_started');
         });
 
-        // Player actions:
+        // Player actions
         socket.on('move_left', () => handlePlayerAction(socket.id, 'moveLeft'));
         socket.on('move_right', () =>
             handlePlayerAction(socket.id, 'moveRight')
@@ -257,20 +264,22 @@ export default function createSocketServer(httpServer) {
         socket.on('soft_drop', () => handlePlayerAction(socket.id, 'softDrop'));
         socket.on('hard_drop', () => handlePlayerAction(socket.id, 'hardDrop'));
 
-        function handlePlayerAction(playerId, action) {
-            const player = players.get(playerId);
+        function handlePlayerAction(socketId, action) {
+            const userId = socketToUserId.get(socketId);
+            const player = players.get(userId);
             if (!player) return;
 
             const gameRoom = games.get(player.room);
             if (!gameRoom || !gameRoom.started) return;
 
-            const playerGame = gameRoom.playerGames.get(playerId);
+            const playerGame = gameRoom.playerGames.get(userId);
             if (!playerGame) return;
 
             if (typeof playerGame[action] === 'function') {
                 playerGame[action]();
+                // Broadcast to all players in the room
                 io.to(player.room).emit('game_state', {
-                    playerId,
+                    playerId: socketId,
                     playerName: player.name,
                     state: playerGame.getState(),
                 });
@@ -279,40 +288,44 @@ export default function createSocketServer(httpServer) {
 
         // Handle disconnect:
         socket.on('disconnect', () => {
-            const player = players.get(socket.id);
+            const userId = socketToUserId.get(socket.id);
+            const player = players.get(userId);
             if (!player) return;
 
             const room = player.room;
             const gameRoom = games.get(room);
 
             if (gameRoom) {
-                gameRoom.players.delete(socket.id);
-                gameRoom.playerGames.delete(socket.id);
+                gameRoom.players.delete(userId);
+                gameRoom.playerGames.delete(userId);
 
                 if (gameRoom.players.size === 0) {
                     games.delete(room);
                     console.log(`Room ${room} deleted.`);
                 } else {
                     // If host leaves, pick a new host:
-                    if (gameRoom.hostId === socket.id) {
-                        const [newHost] = gameRoom.players; // first socket.id in the Set
-                        gameRoom.hostId = newHost;
+                    if (gameRoom.hostId === userId) {
+                        const [newHostUserId] = gameRoom.players; // first userId in the Set
+                        gameRoom.hostId = newHostUserId;
 
-                        const newHostPlayer = players.get(newHost);
+                        const newHostPlayer = players.get(newHostUserId);
                         io.to(room).emit('new_host', {
                             newHost: newHostPlayer?.name || 'Unknown',
                             players: Array.from(gameRoom.players).map(
                                 (id) => players.get(id)?.name || id
                             ),
                         });
-                        console.log(`New host for room ${room}: ${newHost}`);
+                        console.log(
+                            `New host for room ${room}: ${newHostUserId}`
+                        );
                     }
 
                     io.to(room).emit('player_left', { playerId: socket.id });
                 }
             }
 
-            players.delete(socket.id);
+            players.delete(userId);
+            socketToUserId.delete(socket.id);
             console.log(`Client disconnected: ${socket.id}`);
         });
     });

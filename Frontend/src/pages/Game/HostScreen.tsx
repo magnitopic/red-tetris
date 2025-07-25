@@ -11,9 +11,8 @@ const HostScreen: React.FC = ({
 	return (
 		<main className="flex flex-1 justify-center items-center flex-col w-full my-10">
 			<h1 className="text-4xl font-bold mb-4">You are the game host!</h1>
-			<p className="mb-4">
-				Share the game code with your friends to play together.
-			</p>
+			<p>Share the game code with your friends to play together.</p>
+			<p className="mb-4 ">Or try reaching the top score by yourself!</p>
 			<section className="flex justify-center items-center flex-col bg-background-secondary p-10 rounded-lg w-fit">
 				<p className="text-lg font-semibold mb-2">Game Code:</p>
 				<div className="bg-black p-3 rounded-lg">
