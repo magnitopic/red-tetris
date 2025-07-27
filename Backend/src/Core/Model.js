@@ -100,6 +100,9 @@ export default class Model {
             values: values,
         };
 
+        console.log("query:", query);
+        
+
         try {
             const result = await this.db.query(query);
             if (result.rows.length === 0) return [];

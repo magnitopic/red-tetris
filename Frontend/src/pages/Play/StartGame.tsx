@@ -4,6 +4,7 @@ import RegularButton from "../../components/common/RegularButton";
 
 const StartGame: React.FC = () => {
 	const [gameCode, setGameCode] = React.useState("");
+
 	return (
 		<section className="flex flex-1 justify-center items-center flex-col bg-background-secondary p-10 rounded-lg w-full">
 			<h2 className="text-3xl font-bold mb-6">Start playing!</h2>
@@ -16,8 +17,7 @@ const StartGame: React.FC = () => {
 					value="Create Game"
 					disabled={false}
 					callback={() => {
-						// TODO: Logic to create a new game
-						window.location.href = "/game";
+						window.location.href = "/game/new";
 					}}
 				/>
 			</div>
@@ -37,8 +37,8 @@ const StartGame: React.FC = () => {
 						value="Join Game"
 						disabled={false}
 						alternative={true}
-						onClick={() => {
-							//TODO: Logic to join the game using gameCode
+						callback={() => {
+							window.location.href = `/game/${gameCode}`;
 						}}
 					/>
 				</div>

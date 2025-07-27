@@ -1,35 +1,12 @@
 /* import { RouterProvider } from "react-router-dom";
 import { router } from "./routes";
 import { AuthProvider } from "./context/AuthContext"; */
-import { useState, useEffect } from "react";
+import GameScreen from "./GameScreen";
+import HostScreen from "./HostScreen";
+import { useAuth } from "../../context/AuthContext";
+import { useEffect, useState, useRef } from "react";
 import { io } from "socket.io-client";
-
-import { usersApi } from "../../services/api/users";
-
-const BOARD_WIDTH = 10;
-const BOARD_HEIGHT = 22;
-
-interface GameState {
-	board: number[][];
-	currentPiece: {
-		shape: number[][];
-		x: number;
-		y: number;
-		color: number;
-	} | null;
-	gameOver: boolean;
-}
-
-const COLORS: { [key: number]: string } = {
-	1: "bg-cyan-500 border-cyan-700", // I
-	2: "bg-blue-600 border-blue-700", // J
-	3: "bg-orange-500 border-orange-700", // L
-	4: "bg-yellow-400 border-yellow-600", // O
-	5: "bg-green-500 border-green-700", // S
-	6: "bg-purple-500 border-purple-700", // T
-	7: "bg-red-500 border-red-700", // Z
-	8: "bg-gray-500 border-gray-700", // Garbage
-};
+import { useParams } from "react-router-dom";
 
 interface Spectrum {
   state: GameState;
@@ -37,69 +14,138 @@ interface Spectrum {
 }
 
 const index: React.FC = () => {
-	const [gameState, setGameState] = useState(null);
-	const [spectrums, setSpectrums] = useState<{ [playerId: string]: Spectrum }>({});
-	const [playerName, setPlayerName] = useState("Guest");
-	const [socketId, setSocketId] = useState("");
-	const [userId, setUserId] = useState(null);
+	let { clientRoomId } = useParams();
+	const { user } = useAuth();
+	const [isHost, setIsHost] = useState(false);
+	const [currentPlayers, setCurrentPlayers] = useState([]);
+	const [seed, setSeed] = useState("");
+	const [playing, setPlaying] = useState(false);
+	const socketRef = useRef(null);
 
-	useEffect(() => {
-	const fetchUser = async () => {
-		try {
-			const response = await usersApi.getMe();
-			if (response.msg?.username) {
-				setPlayerName(response.msg.username);
-				setUserId(response.msg.id);
-			}
-		} catch (e) {
-		console.error("Error fetching user:", e);
-		}
-	};
-		fetchUser();
-	}, []);
+	const [gameState, setGameState] = useState(null);
+	const [spectrums, setSpectrums] = useState<{
+		[playerId: string]: Spectrum;
+	}>({});
+
+	const playerName = user?.username;
+	const userId = user?.id;
+
+	const BOARD_WIDTH = 10;
+	const BOARD_HEIGHT = 22;
 
 	useEffect(() => {
 		if (!playerName || !userId) return;
+
+		// Create socket connection
 		const socket = io("http://localhost:3001");
+		socketRef.current = socket;
 
 		socket.on("connect", () => {
 			console.log("Connected to server");
 		});
 
+		if (clientRoomId === "new")
+			clientRoomId = Math.floor(100000 + Math.random() * 900000);
+		else clientRoomId = parseInt(clientRoomId);
+
+		console.log("clientROOM:", clientRoomId);
+
 		socket.emit("join_room", {
-			room: "room123",
+			room: clientRoomId,
 			playerName: playerName,
 			userId: userId,
-			BOARD_WIDTH,
-			BOARD_HEIGHT,
-			speed: 500, // Default speed
+			width: BOARD_WIDTH,
+			height: BOARD_HEIGHT,
+			speed: 100,
 		});
 
-		socket.on("joined_room", ({ host, players, socketId }) => {
-			setSocketId(socketId);
+		socket.on("joined_room", ({ host, players, seed }) => {
 			console.log(`Is host: ${host}`);
 			console.log(`Current players: ${players}`);
+			console.log(`Current seed: ${seed}`);
 
-			if (host) {
-				socket.emit("start_game");
-			}
+			setIsHost(host);
+			setCurrentPlayers(players);
+			window.history.pushState({}, "", `/game/${seed}`);
+			setSeed(seed);
 		});
 
-
-		socket.on("game_state", ({ playerId, state, playerName: senderName }) => {
-			if (playerId === socket.id) {
-				setGameState(state);
-			} else {
-				setSpectrums(prev => ({
-					...prev,
-					[playerId]: { state, playerName: senderName }
-				}));
-			}
+		socket.on("new_host", ({ newHost, players }) => {
+			console.log("newHost", newHost);
+			if (playerName == newHost) setIsHost(true);
+			setCurrentPlayers(players);
+			console.log("new player list:", players);
 		});
 
-		// Events
+		socket.on("game_started", () => {
+			setPlaying(true);
+		});
+
+		socket.on("player_joined", ({ playerId, playerName }) => {
+			console.log(`Player joined: ${playerName}`);
+			setCurrentPlayers((prev) => [
+				...prev,
+				{ id: playerId, name: playerName },
+			]);
+		});
+
+		socket.on("player_left", ({ playerId }) => {
+			console.log(`Player left: ${playerId}`);
+			setCurrentPlayers((prev) =>
+				prev.filter((player) => player.id !== playerId)
+			);
+		});
+
+		socket.on(
+			"game_state",
+			({ playerId, state, playerName: senderName }) => {
+				console.log("gameState received for player:", playerId);
+
+				if (playerId === socket.id) {
+					console.log("Setting my game state");
+					setGameState(state);
+				} else {
+					console.log("Setting spectrum for:", senderName);
+					setSpectrums((prev) => ({
+						...prev,
+						[playerId]: { state, playerName: senderName },
+					}));
+				}
+			}
+		);
+
+		return () => {
+			socket.disconnect();
+		};
+	}, [playerName, userId]);
+
+	useEffect(() => {
+		const socket = socketRef.current;
+		if (!socket || !playing) return;
+
 		const onKeyDown = (e: KeyboardEvent) => {
-			if (!socket) return;
+			console.log(
+				"Key pressed:",
+				e.key,
+				"Playing:",
+				playing,
+				"Socket connected:",
+				socket.connected
+			);
+
+			// Prevent default behavior for game keys
+			if (
+				[
+					"ArrowLeft",
+					"ArrowRight",
+					"ArrowUp",
+					"ArrowDown",
+					" ",
+				].includes(e.key)
+			) {
+				e.preventDefault();
+			}
+
 			if (e.key === "ArrowLeft") socket.emit("move_left");
 			if (e.key === "ArrowRight") socket.emit("move_right");
 			if (e.key === "ArrowUp") socket.emit("rotate");
@@ -111,105 +157,41 @@ const index: React.FC = () => {
 		window.addEventListener("keydown", onKeyDown);
 
 		return () => {
-			socket.disconnect();
 			window.removeEventListener("keydown", onKeyDown);
 		};
-	}, [playerName, userId]); //TODO delete userId?
+	}, [playing]);
 
-	if (!gameState) {
-		return (
-			<div className="text-center mt-10 text-xl text-gray-500">
-				Loading game...
-			</div>
-		);
-	}
-
-
-
-	const { board, currentPiece, gameOver, score } = gameState;
-
-	const boardWithPiece = board.map((row) => [...row]);
-
-	if (!gameOver && currentPiece) {
-		currentPiece.shape.forEach((row, dy) => {
-			row.forEach((cell, dx) => {
-				if (cell) {
-					const x = currentPiece.x + dx;
-					const y = currentPiece.y + dy;
-					if (
-						y >= 0 &&
-						y < BOARD_HEIGHT &&
-						x >= 0 &&
-						x < BOARD_WIDTH
-					) {
-						boardWithPiece[y][x] = cell;
-					}
-				}
-			});
-		});
-	}
+	console.log("gameState", gameState);
+	console.log("spectrums", spectrums);
 
 	return (
-		<div className="flex justify-center mt-8">
-			{/*Main Board */}
-			<div className="text-2xl text-center text-whitep-1 mb-1">score: {score}</div>
-			<div 
-				className="grid grid-cols-10 gap-0.5 bg-primary-dark p-1 rounded"
-				style={{ width: 300, height: 660 }}
-			>
-				{boardWithPiece.flat().map((cell, idx) => {
-					const y = Math.floor(idx / BOARD_WIDTH);
-					return (
-						<div
-							key={idx}
-							className={`w-7 h-7 ${
-								cell
-									? `${
-											COLORS[cell] ||
-											"bg-white border-white"
-									  }`
-									: y < 2
-									? ""
-									: "bg-gray-900 border border-gray-700"
-							}`}
-						/>
-					);
-				})}
-			</div> {/* End Main Board */}
-			 <div className="flex flex-col gap-2 m-4 w-[180px]"> {/* Spectrums Boards */}
-				{Object.entries(spectrums).map(([id, spec]) => {
-					if (!Array.isArray(spec.state?.board) || !Array.isArray(spec.state.board[0])) {
-						return null; 
-					}
-					
-					return (
-						<div key={id} className="border p-1">
-							<div className="text-md text-center text-gray-100 mb-1">{spec.playerName}</div>
-							<div className="grid grid-cols-10 gap-0.5">
-								{spec.state.board.flat().map((cell, idx) => {
-									const y = Math.floor(idx / BOARD_WIDTH);
-									return (
-										<div
-											key={idx}
-											className={`w-3 h-3 ${
-												cell ? `${COLORS[cell] || "bg-white border-white"}` : y < 2
-													? ""
-													: "bg-gray-900 border border-gray-700"
-											}`}
-										/>
-									);
-								})}
-							</div>
-						</div>
-					);
-				})}
-			</div> {/* End Spectrums Boards */}
-			{gameOver && (
-				<div className="mt-4 text-red-600 text-2xl font-bold">
-					Game Over
+		<>
+			{playing && !gameState ? (
+				<div className="text-center mt-10 text-xl text-gray-500">
+					Loading game here...
 				</div>
+			) : playing && gameState ? (
+				<GameScreen
+					socket={socketRef.current}
+					spectrums={spectrums}
+					gameState={gameState}
+				/>
+			) : isHost ? (
+				<HostScreen
+					currentPlayers={currentPlayers}
+					seed={seed}
+					socket={socketRef.current}
+					setPlaying={setPlaying}
+					userId={userId}
+				/>
+			) : (
+				<main className="flex flex-1 justify-center items-center flex-col">
+					<h1 className="text-4xl font-bold mb-4">
+						Waiting for host to start...
+					</h1>
+				</main>
 			)}
-		</div>
+		</>
 	);
 };
 

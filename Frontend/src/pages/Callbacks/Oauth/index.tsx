@@ -70,7 +70,7 @@ const index: React.FC = () => {
 					<div className="mx-auto mt-7">
 						<RegularButton
 							type="button"
-							callback={() => navigate("/login")}
+							callback={() => navigate("/authenticate")}
 							value="Back to login form"
 						/>
 					</div>

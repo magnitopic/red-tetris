@@ -6,7 +6,6 @@ import NotFound from "../pages/NotFound";
 import ProtectedRoute from "./ProtectedRoute";
 import Play from "../pages/Play";
 import Authenticate from "../pages/Authenticate";
-import Register from "../pages/Register";
 import Profile from "../pages/Profile";
 import ProfileEdit from "../pages/ProfileEdit";
 import PublicProfile from "../pages/PublicProfile";
@@ -30,7 +29,7 @@ const protectedRoutes = {
 		),
 	},
 	game: {
-		path: "game",
+		path: "game/:clientRoomId",
 		element: (
 			<ProtectedRoute>
 				<Game />
