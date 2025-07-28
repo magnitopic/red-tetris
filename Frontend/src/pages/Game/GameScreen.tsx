@@ -3,6 +3,7 @@ import { router } from "./routes";
 import { AuthProvider } from "./context/AuthContext"; */
 import { useState, useEffect } from "react";
 import { io } from "socket.io-client";
+import ExitModal from "./ExitModal";
 
 import { usersApi } from "../../services/api/users";
 
@@ -157,12 +158,11 @@ const index: React.FC = ({ socket, spectrums, gameState }) => {
 					);
 				})}
 			</div>{" "}
-			{/* End Spectrums Boards */}
-			{gameOver && (
-				<div className="mt-4 text-red-600 text-2xl font-bold">
-					Game Over
-				</div>
-			)}
+			{
+				gameOver && (
+					<ExitModal userScore={gameState.score} />
+				)
+			}
 		</div>
 	);
 };

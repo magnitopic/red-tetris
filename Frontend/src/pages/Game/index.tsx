@@ -56,7 +56,7 @@ const index: React.FC = () => {
 			userId: userId,
 			width: BOARD_WIDTH,
 			height: BOARD_HEIGHT,
-			speed: 100,
+			speed: 300,
 		});
 
 		socket.on("joined_room", ({ host, players, seed }) => {
