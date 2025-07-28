@@ -85,7 +85,7 @@ export default class Model {
     async createOrUpdate({ input, keyName }) {
         const createFields = Object.keys(input).join(', ');
         const updateFields = Object.keys(input)
-            .map((key, index) => `${key} = $${index + 1}`)
+            .map(key => `${key} = EXCLUDED.${key}`)
             .join(', ');
         const values = Object.values(input);
         const createPlaceholders = values
@@ -98,10 +98,7 @@ export default class Model {
                 DO UPDATE SET ${updateFields}
                 RETURNING *;`,
             values: values,
-        };
-
-        console.log("query:", query);
-        
+        };     
 
         try {
             const result = await this.db.query(query);

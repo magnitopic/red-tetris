@@ -63,11 +63,12 @@ export default function createSocketServer(httpServer) {
                     try {
                         const savedGame = await gameModel.createOrUpdate({
                             input: {
-                              'game_seed': seed,
-                              'finished': false,
+                                game_seed: seed,
+                                finished: false,
                             },
-                            'keyName': 'game_seed',
+                            keyName: 'game_seed',
                         });
+                        gameRoom.id = savedGame.id;
                         console.log(`Game saved to DB with seed: ${seed}`);
                     } catch (err) {
                         console.error('Error saving game to DB:', err.message);
@@ -92,7 +93,7 @@ export default function createSocketServer(httpServer) {
         });
         console.log(`game_players created for ${playerName}`);
       } catch (err) {
-        console.error("Error creando game_players:", err.message);
+        console.error("Error creating game_players:", err.message);
       }
 
       // Track in room
@@ -130,7 +131,6 @@ export default function createSocketServer(httpServer) {
               },
               async (score) => {
                   console.log(`Player ${socket.id}: game over.`);
-
             await gamePlayersModel.updateByReference(
               { score: score }, 
               { game_id: gameRoom.id, user_id: userId });
@@ -219,7 +219,6 @@ export default function createSocketServer(httpServer) {
                     },
                     async (score) => {
                         console.log(`Player ${playerId} game over.`);
-
             await gamePlayersModel.updateByReference(
               {score: score},
               { game_id: gameRoom.id, user_id: userId }
