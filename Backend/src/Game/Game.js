@@ -167,7 +167,7 @@ export default class Game {
     if (penaltyLines <= 0) return;
 
     for (const [playerId, otherGame] of this.gameRoom.playerGames.entries()) {
-      if (otherGame === this) continue;
+      if (otherGame === this || otherGame.getState().gameOver) continue;
       otherGame.board.addGarbageLines(penaltyLines);
       // Send socket-state to other players
       this.gameRoom.io.to(otherGame.socketId).emit("game_state", otherGame.getState()); 

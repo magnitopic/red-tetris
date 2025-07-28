@@ -12,16 +12,22 @@ const StartGame: React.FC = () => {
 				Either create a new game or join an existing one
 			</p>
 
-			<div className="mb-10">
+			<div className="mb-10 flex gap-5 flex-col items-center">
 				<RegularButton
-					value="Create Game"
+					value="Create Regular Game"
 					disabled={false}
 					callback={() => {
-						window.location.href = "/game/new";
+						window.location.href = "/game/newRegular";
+					}}
+				/>
+				<RegularButton
+					value="Create Hardcore Game"
+					disabled={false}
+					callback={() => {
+						window.location.href = "/game/newHardcore";
 					}}
 				/>
 			</div>
-
 			<details className="mb-10 bg-primary-monochromatic text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors duration-300">
 				<summary className="cursor-pointer text-lg font-semibold mb-2">
 					Join an existing game!

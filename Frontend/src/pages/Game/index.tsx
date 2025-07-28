@@ -44,11 +44,10 @@ const index: React.FC = () => {
 			console.log("Connected to server");
 		});
 
-		if (clientRoomId === "new")
+		const gameSpeed = clientRoomId === "newRegular"? 300 : 100
+		if (clientRoomId === "newRegular" || clientRoomId === "newHardcore")
 			clientRoomId = Math.floor(100000 + Math.random() * 900000);
 		else clientRoomId = parseInt(clientRoomId);
-
-		console.log("clientROOM:", clientRoomId);
 
 		socket.emit("join_room", {
 			room: clientRoomId,
@@ -56,7 +55,7 @@ const index: React.FC = () => {
 			userId: userId,
 			width: BOARD_WIDTH,
 			height: BOARD_HEIGHT,
-			speed: 300,
+			speed: gameSpeed,
 		});
 
 		socket.on("joined_room", ({ host, players, seed }) => {
