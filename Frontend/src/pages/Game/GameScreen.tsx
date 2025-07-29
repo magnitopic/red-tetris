@@ -70,10 +70,10 @@ const index: React.FC = ({ socket, spectrums, gameState }) => {
 
 	const { board, currentPiece, gameOver } = gameState;
 
-	const boardWithPiece = board.map((row) => [...row]);
+	const boardWithPiece = board.map((row: any) => [...row]);
 
 	if (!gameOver && currentPiece) {
-		currentPiece.shape.forEach((row, dy) => {
+		currentPiece.shape.forEach((row: any[], dy: any) => {
 			row.forEach((cell, dx) => {
 				if (cell) {
 					const x = currentPiece.x + dx;

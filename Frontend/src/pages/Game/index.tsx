@@ -88,23 +88,27 @@ const index: React.FC = () => {
 			]);
 		});
 
-		socket.on("player_left", ({ playerId }) => {
+		socket.on("player_left", ({ playerId, userId }) => {
 			console.log(`Player left: ${playerId}`);
 			setCurrentPlayers((prev) =>
 				prev.filter((player) => player.id !== playerId)
 			);
+
+			// Clean disconected user's spectrum TODO: not working
+		  	setSpectrums((prev) => {
+				const newSpectrums = { ...prev };
+				delete newSpectrums[playerId];
+				delete newSpectrums[userId];
+				return newSpectrums;
+			});
 		});
 
 		socket.on(
 			"game_state",
 			({ playerId, state, playerName: senderName }) => {
-				console.log("gameState received for player:", playerId);
-
 				if (playerId === socket.id) {
-					console.log("Setting my game state");
 					setGameState(state);
 				} else {
-					console.log("Setting spectrum for:", senderName);
 					setSpectrums((prev) => ({
 						...prev,
 						[playerId]: { state, playerName: senderName },
@@ -159,9 +163,6 @@ const index: React.FC = () => {
 			window.removeEventListener("keydown", onKeyDown);
 		};
 	}, [playing]);
-
-	console.log("gameState", gameState);
-	console.log("spectrums", spectrums);
 
 	return (
 		<>

@@ -31,8 +31,6 @@ const HostScreen: React.FC = ({
 					value="Start Game"
 					type="button"
 					callback={() => {
-						console.log("I wanna start!!!");
-
 						socket.emit("start_game", {
 							userId: userId,
 						});
