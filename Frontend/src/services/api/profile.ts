@@ -91,20 +91,4 @@ export const profileApi = {
 		});
 		return response;
 	},
-
-	/* changePassword: async (passwords: string) => { TODO: delete?
-		const response = await apiRequest(`auth/password/change`, {
-			method: "POST",
-			body: JSON.stringify(passwords),
-		});
-		return response;
-	},
-
-	resetPassword: async (email: string) => {
-		const response = await apiRequest(`auth/password/reset`, {
-			method: "POST",
-			body: JSON.stringify({ email }),
-		});
-		return response;
-	}, */
 };
