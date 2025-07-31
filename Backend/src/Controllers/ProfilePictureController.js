@@ -16,11 +16,6 @@ export default class ProfilePictureController {
         if (user.length === 0)
             return res.status(404).json({ msg: StatusMessage.USER_NOT_FOUND });
 
-        // If profile picture is a URL, redirect to it
-        if (user.profile_picture_is_url && user.profile_picture) {
-            return res.redirect(user.profile_picture);
-        }
-
         let profilePicturePath = user.profile_picture;
         if (!profilePicturePath)
             profilePicturePath =
