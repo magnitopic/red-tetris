@@ -13,25 +13,29 @@ interface Spectrum {
   playerName: string;
 }
 
+
 const index: React.FC = () => {
-	let { clientRoomId } = useParams();
-	const { user } = useAuth();
-	const [isHost, setIsHost] = useState(false);
-	const [currentPlayers, setCurrentPlayers] = useState([]);
-	const [seed, setSeed] = useState("");
-	const [playing, setPlaying] = useState(false);
-	const socketRef = useRef(null);
+  let { clientRoomId } = useParams();
+  const { user } = useAuth();
+  const [isHost, setIsHost] = useState(false);
+  const [currentPlayers, setCurrentPlayers] = useState([]);
+  const [seed, setSeed] = useState("");
+  const [playing, setPlaying] = useState(false);
+  const socketRef = useRef(null);
 
-	const [gameState, setGameState] = useState(null);
-	const [spectrums, setSpectrums] = useState<{
-		[playerId: string]: Spectrum;
-	}>({});
+  // Left players
+  const removedIds = useRef<Set<string>>(new Set());
 
-	const playerName = user?.username;
-	const userId = user?.id;
+  const [gameState, setGameState] = useState(null);
+  const [spectrums, setSpectrums] = useState<{
+	[playerId: string]: Spectrum;
+  }>({});
 
-	const BOARD_WIDTH = 10;
-	const BOARD_HEIGHT = 22;
+  const playerName = user?.username;
+  const userId = user?.id;
+
+  const BOARD_WIDTH = 10;
+  const BOARD_HEIGHT = 22;
 
 	useEffect(() => {
 		if (!playerName || !userId) return;
@@ -88,32 +92,34 @@ const index: React.FC = () => {
 			]);
 		});
 
+
 		socket.on("player_left", ({ playerId, userId }) => {
 			console.log(`Player left: ${playerId}`);
+			removedIds.current.add(playerId);
+			if (userId) removedIds.current.add(userId);
 			setCurrentPlayers((prev) =>
-				prev.filter((player) => player.id !== playerId)
+			prev.filter((player) => player.id !== playerId && player.id !== userId)
 			);
-
-			// Clean disconected user's spectrum TODO: not working
-		  	setSpectrums((prev) => {
-				const newSpectrums = { ...prev };
-				delete newSpectrums[playerId];
-				delete newSpectrums[userId];
-				return newSpectrums;
+			setSpectrums((prev) => {
+			const newSpectrums = { ...prev };
+			if (playerId) delete newSpectrums[playerId];
+			if (userId) delete newSpectrums[userId];
+			return newSpectrums;
 			});
 		});
 
 		socket.on(
 			"game_state",
 			({ playerId, state, playerName: senderName }) => {
-				if (playerId === socket.id) {
-					setGameState(state);
-				} else {
-					setSpectrums((prev) => ({
-						...prev,
-						[playerId]: { state, playerName: senderName },
-					}));
-				}
+			if (playerId === socket.id) {
+				setGameState(state);
+				return;
+			}
+			if (removedIds.current.has(playerId)) return;
+			setSpectrums((prev) => ({
+				...prev,
+				[playerId]: { state, playerName: senderName },
+			}));
 			}
 		);
 
@@ -143,7 +149,6 @@ const index: React.FC = () => {
 					"ArrowRight",
 					"ArrowUp",
 					"ArrowDown",
-					" ",
 				].includes(e.key)
 			) {
 				e.preventDefault();
@@ -154,7 +159,6 @@ const index: React.FC = () => {
 			if (e.key === "ArrowUp") socket.emit("rotate");
 			if (e.key === "ArrowDown") socket.emit("soft_drop");
 			if (e.key === " ") socket.emit("hard_drop");
-			if (e.key === "Escape") socket.disconnect();
 		};
 
 		window.addEventListener("keydown", onKeyDown);
