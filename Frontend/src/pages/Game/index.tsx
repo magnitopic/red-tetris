@@ -27,9 +27,7 @@ const index: React.FC = () => {
   const removedIds = useRef<Set<string>>(new Set());
 
   const [gameState, setGameState] = useState(null);
-  const [spectrums, setSpectrums] = useState<{
-	[playerId: string]: Spectrum;
-  }>({});
+  const [spectrums, setSpectrums] = useState<{[playerId: string]: Spectrum;}>({});
 
   const playerName = user?.username;
   const userId = user?.id;
@@ -98,30 +96,31 @@ const index: React.FC = () => {
 			removedIds.current.add(playerId);
 			if (userId) removedIds.current.add(userId);
 			setCurrentPlayers((prev) =>
-			prev.filter((player) => player.id !== playerId && player.id !== userId)
+				prev.filter((player) => player.id !== playerId && player.id !== userId)
 			);
 			setSpectrums((prev) => {
-			const newSpectrums = { ...prev };
-			if (playerId) delete newSpectrums[playerId];
-			if (userId) delete newSpectrums[userId];
-			return newSpectrums;
+				const newSpectrums = { ...prev };
+				if (playerId) delete newSpectrums[playerId];
+				if (userId) delete newSpectrums[userId];
+				return newSpectrums;
 			});
 		});
 
-		socket.on(
-			"game_state",
-			({ playerId, state, playerName: senderName }) => {
+	socket.on(
+		"game_state",
+		({ playerId, state, playerName: senderName }) => {
 			if (playerId === socket.id) {
 				setGameState(state);
 				return;
 			}
 			if (removedIds.current.has(playerId)) return;
+			if (senderName === playerName) return;
 			setSpectrums((prev) => ({
 				...prev,
 				[playerId]: { state, playerName: senderName },
 			}));
-			}
-		);
+		}
+	);
 
 		return () => {
 			socket.disconnect();
