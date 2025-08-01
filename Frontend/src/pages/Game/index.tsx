@@ -1,16 +1,19 @@
-/* import { RouterProvider } from "react-router-dom";
-import { router } from "./routes";
-import { AuthProvider } from "./context/AuthContext"; */
 import GameScreen from "./GameScreen";
 import HostScreen from "./HostScreen";
 import { useAuth } from "../../context/AuthContext";
 import { useEffect, useState, useRef } from "react";
 import { io } from "socket.io-client";
 import { useParams } from "react-router-dom";
+import WaitingModal from "./WaitingModal";
 
 interface Spectrum {
   state: GameState;
   playerName: string;
+}
+
+interface Player {
+  id: string;
+  name: string;
 }
 
 
@@ -18,10 +21,11 @@ const index: React.FC = () => {
   let { clientRoomId } = useParams();
   const { user } = useAuth();
   const [isHost, setIsHost] = useState(false);
-  const [currentPlayers, setCurrentPlayers] = useState([]);
+	const [currentPlayers, setCurrentPlayers] = useState<Player[]>([]);
   const [seed, setSeed] = useState("");
   const [playing, setPlaying] = useState(false);
   const socketRef = useRef(null);
+	const [showWaitingModal, setShowWaitingModal] = useState(false);
 
   // Left players
   const removedIds = useRef<Set<string>>(new Set());
@@ -48,8 +52,8 @@ const index: React.FC = () => {
 
 		const gameSpeed = clientRoomId === "newRegular"? 300 : 100
 		if (clientRoomId === "newRegular" || clientRoomId === "newHardcore")
-			clientRoomId = Math.floor(100000 + Math.random() * 900000);
-		else clientRoomId = parseInt(clientRoomId);
+			clientRoomId = String(Math.floor(100000 + Math.random() * 900000));
+		else clientRoomId = String(parseInt(clientRoomId ?? "0"));
 
 		socket.emit("join_room", {
 			room: clientRoomId,
@@ -106,21 +110,21 @@ const index: React.FC = () => {
 			});
 		});
 
-	socket.on(
-		"game_state",
-		({ playerId, state, playerName: senderName }) => {
-			if (playerId === socket.id) {
-				setGameState(state);
-				return;
+		socket.on(
+			"game_state",
+			({ playerId, state, playerName: senderName }) => {
+				if (playerId === socket.id) {
+					setGameState(state);
+					return;
+				}
+				if (removedIds.current.has(playerId)) return;
+				if (senderName === playerName) return;
+				setSpectrums((prev) => ({
+					...prev,
+					[playerId]: { state, playerName: senderName },
+				}));
 			}
-			if (removedIds.current.has(playerId)) return;
-			if (senderName === playerName) return;
-			setSpectrums((prev) => ({
-				...prev,
-				[playerId]: { state, playerName: senderName },
-			}));
-		}
-	);
+		);
 
 		return () => {
 			socket.disconnect();
@@ -167,8 +171,23 @@ const index: React.FC = () => {
 		};
 	}, [playing]);
 
+	useEffect(() => {
+		const socket = socketRef.current;
+		if (!socket) return;
+
+		socket.on("game_already_started", ({ message }: { message: string }) => {
+			console.log(message);
+			setShowWaitingModal(true);
+		});
+
+		return () => {
+			socket.off("game_already_started");
+		};
+	}, []);
+
 	return (
 		<>
+			{showWaitingModal && <WaitingModal />}
 			{playing && !gameState ? (
 				<div className="text-center mt-10 text-xl text-gray-500">
 					Loading game here...
