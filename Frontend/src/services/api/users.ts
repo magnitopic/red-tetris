@@ -7,14 +7,7 @@ export const usersApi = {
 	},
 
 	getPublicProfile: async (username: string) => {
-		const response = await apiRequest(`users/profile/${username}`);
-		return response;
-	},
-
-	getLatestWatchedMovies: async (userId: string, limit: number = 5) => {
-		const response = await apiRequest(
-			`users/${userId}/watched-movies?limit=${limit}`
-		);
+		const response = await apiRequest(`users/${username}`);
 		return response;
 	},
 };
