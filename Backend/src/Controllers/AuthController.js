@@ -1,26 +1,15 @@
 // Third-Party Imports:
-import jwt from 'jsonwebtoken';
+import * as jwt from 'jsonwebtoken';
 
 // Local Imports:
 import userModel from '../Models/UserModel.js';
-import { returnErrorStatus } from '../Utils/errorUtils.js';
-import { validateUser, validatePartialUser } from '../Schemas/userSchema.js';
-import {
-    validatePasswords,
-    validatePartialPasswords,
-} from '../Schemas/changePasswordSchema.js';
 import StatusMessage from '../Utils/StatusMessage.js';
 import {
     checkAuthStatus,
-    hashPassword,
     createAuthTokens,
-    registerUser,
     authenticateUser,
 } from '../Utils/authUtils.js';
-import {
-    confirmAccountValidations,
-    loginValidations,
-} from '../Validations/authValidations.js';
+import { confirmAccountValidations } from '../Validations/authValidations.js';
 
 export default class AuthController {
     static async authenticate(req, res) {
