@@ -67,7 +67,7 @@ describe('Game class', () => {
     expect(mockRoom.pieceQueue.length).toBeGreaterThan(0);
   });
 
-   test('moveLeft should decrement x if position is valid', () => {
+  test('moveLeft should decrement x if position is valid', () => {
     const game = new Game(10, 22, jest.fn(), jest.fn(), mockRoom, 'u1', 's1');
     game.currentPiece.x = 5;
     game.moveLeft();
@@ -97,6 +97,30 @@ describe('Game class', () => {
     expect(mockBoardInstance.lockPiece).toHaveBeenCalledWith(mockPiece);
     expect(game.score).toBe(game.getPoints(2));
   });
+
+	test('softDrop triggers game over if new piece spawn fails', () => {
+		const onGameOver = jest.fn();
+		const game = new Game(10, 22, jest.fn(), onGameOver, mockRoom, 'u1', 's1');
+		mockBoardInstance.isValidPosition.mockReturnValueOnce(false);
+		Piece.spawn.mockReturnValueOnce(null); // force failed spawn
+		game.softDrop();
+		expect(game.gameOver).toBe(true);
+		expect(onGameOver).toHaveBeenCalledWith(game.score);
+	});
+
+	test('hardDrop moves piece down and locks when hitting bottom', async () => {
+		mockBoardInstance.isValidPosition
+			.mockReturnValueOnce(true) 
+			.mockReturnValueOnce(false);
+
+		mockBoardInstance.lockPiece.mockReturnValueOnce(1); // cleared lines
+		const game = new Game(10, 22, jest.fn(), jest.fn(), mockRoom, 'u1', 's1');
+		
+		await game.hardDrop();
+		
+		expect(mockBoardInstance.lockPiece).toHaveBeenCalledWith(mockPiece);
+		expect(game.score).toBe(game.getPoints(1));
+	});
 
   test('rotate should change rotation if valid', () => {
     const game = new Game(10, 22, jest.fn(), jest.fn(), mockRoom, 'u1', 's1');
