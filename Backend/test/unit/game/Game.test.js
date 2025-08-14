@@ -1,21 +1,21 @@
 import { jest } from '@jest/globals';
-import { TETROMINOES } from '../src/Game/Tetrominoes.js'; 
+import { TETROMINOES } from '../../../src/Game/Tetrominoes.js'; 
 
 // Declare mocks
-jest.unstable_mockModule('../src/Game/Board.js', () => ({
+jest.unstable_mockModule('../../../src/Game/Board.js', () => ({
   Board: jest.fn()
 }));
 
-jest.unstable_mockModule('../src/Game/Piece.js', () => ({
+jest.unstable_mockModule('../../../src/Game/Piece.js', () => ({
   Piece: { spawn: jest.fn() }
 }));
 
 // Import modules
 let Game, Board, Piece;
 beforeAll(async () => {
-  ({ Board } = await import('../src/Game/Board.js'));
-  ({ Piece } = await import('../src/Game/Piece.js'));
-  ({ default: Game } = await import('../src/Game/Game.js'));
+  ({ Board } = await import('../../../src/Game/Board.js'));
+  ({ Piece } = await import('../../../src/Game/Piece.js'));
+  ({ default: Game } = await import('../../../src/Game/Game.js'));
 });
 
 // mockPiece using TETROMINOES
