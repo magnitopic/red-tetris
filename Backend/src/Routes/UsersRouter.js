@@ -16,7 +16,6 @@ export default class UsersRouter {
         // GET:
         router.get('/', UsersController.getAllUsers);
         router.get('/me', UsersController.getMe);
-        router.get('/:id', UsersController.getUserById);
         router.get('/:username', UsersController.getUserProfile);
         router.get(
             '/:id/profile-picture',
