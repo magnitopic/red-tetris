@@ -34,7 +34,10 @@ backend: volumes
 	@docker compose up backend
 
 test-backend: 
-	@cd ./Backend && npm run test && npm run coverage
+	@cd ./Backend && npm run test
+
+test-backend-cov: 
+	@cd ./Backend && npm run test-cov
 
 test-frontend: 
 	@cd ./Frontend && npm run test
