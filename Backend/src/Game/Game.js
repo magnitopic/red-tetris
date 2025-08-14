@@ -87,7 +87,6 @@ export default class Game {
 			// check if new spawn collides
       if (this.currentPiece === null) {
         this.gameOver = true;
-        console.log("Game over!!!")
         this.OnGameOver?.(this.score);
       }
     }
@@ -123,7 +122,6 @@ export default class Game {
         // check if new spawn collides
         if (this.currentPiece === null) {
           this.gameOver = true;
-          console.log("Game over!!!")
           this.OnGameOver?.(this.score);
         }
         break;
