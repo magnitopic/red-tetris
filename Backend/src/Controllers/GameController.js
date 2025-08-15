@@ -1,4 +1,5 @@
 import gameModel from '../Models/GameModel.js';
+import StatusMessage from '../Utils/StatusMessage.js';
 
 export default class GameController {
     static async getAllGames(req, res) {

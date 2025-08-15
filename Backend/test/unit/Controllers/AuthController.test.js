@@ -15,6 +15,7 @@ const mockUserModel = {
   findOne: jest.fn(),
   update: jest.fn(),
 };
+
 await jest.unstable_mockModule('../../../src/Models/UserModel.js', () => ({
   default: mockUserModel,
 }));
