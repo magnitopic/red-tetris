@@ -56,9 +56,6 @@ const index: React.FC = ({ socket, spectrums, gameState }) => {
 		fetchUser();
 	}, []);
 
-	useEffect(() => {
-		console.log("reload");
-	}, [gameState, spectrums]);
 
 	if (!gameState) {
 		return (

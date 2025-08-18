@@ -39,6 +39,16 @@ const index: React.FC = () => {
   const BOARD_WIDTH = 10;
   const BOARD_HEIGHT = 22;
 
+
+	useEffect(() => {
+		const navigationEntries = performance.getEntriesByType("navigation");
+
+		if (navigationEntries.length > 0 && navigationEntries[0].type === "reload") {
+		console.log("Page was reloaded");
+		window.location.href = "/play";
+		}
+	}, []);
+
 	useEffect(() => {
 		if (!playerName || !userId) return;
 
