@@ -4,6 +4,8 @@ import { AuthProvider } from "./context/AuthContext"; */
 import { useState, useEffect } from "react";
 import { io } from "socket.io-client";
 import ExitModal from "./ExitModal";
+import Board from "./Board";
+import { useBreakpoints } from "../../hooks/useBreakpoints";
 
 import { usersApi } from "../../services/api/users";
 
@@ -21,17 +23,6 @@ interface GameState {
 	gameOver: boolean;
 }
 
-const COLORS: { [key: number]: string } = {
-	1: "bg-cyan-500 border-cyan-700", // I
-	2: "bg-blue-600 border-blue-700", // J
-	3: "bg-orange-500 border-orange-700", // L
-	4: "bg-yellow-400 border-yellow-600", // O
-	5: "bg-green-500 border-green-700", // S
-	6: "bg-purple-500 border-purple-700", // T
-	7: "bg-red-500 border-red-700", // Z
-	8: "bg-gray-500 border-gray-700", // Garbage
-};
-
 interface Spectrum {
 	state: GameState;
 	playerName: string;
@@ -40,6 +31,7 @@ interface Spectrum {
 const index: React.FC = ({ socket, spectrums, gameState }) => {
 	const [playerName, setPlayerName] = useState("Guest");
 	const [userId, setUserId] = useState(null);
+	const { isMobile, isTablet, isDesktop } = useBreakpoints();
 
 	useEffect(() => {
 		const fetchUser = async () => {
@@ -56,6 +48,18 @@ const index: React.FC = ({ socket, spectrums, gameState }) => {
 		fetchUser();
 	}, []);
 
+	useEffect(() => {
+		// Prevent default space key behavior
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.code === "Space") {
+				e.preventDefault();
+			}
+		};
+		window.addEventListener("keydown", handleKeyDown);
+		return () => {
+			window.removeEventListener("keydown", handleKeyDown);
+		};
+	}, []);
 
 	if (!gameState) {
 		return (
@@ -88,78 +92,65 @@ const index: React.FC = ({ socket, spectrums, gameState }) => {
 		});
 	}
 
-	return (
-		<div className="flex justify-center mt-8">
-			{/*Main Board */}
-			<div
-				className="grid grid-cols-10 gap-0.5 bg-primary-dark p-1 rounded"
-				style={{ width: 300, height: 660 }}
-			>
-				{boardWithPiece.flat().map((cell, idx) => {
-					const y = Math.floor(idx / BOARD_WIDTH);
-					return (
-						<div
-							key={idx}
-							className={`w-7 h-7 ${
-								cell
-									? `${
-											COLORS[cell] ||
-											"bg-white border-white"
-									  }`
-									: y < 2
-									? ""
-									: "bg-gray-900 border border-gray-700"
-							}`}
-						/>
-					);
-				})}
-			</div>{" "}
-			{/* End Main Board */}
-			<div className="flex flex-col gap-2 m-4 w-[180px]">
-				{" "}
-				{/* Spectrums Boards */}
-				{Object.entries(spectrums).map(([id, spec]) => {
-					if (
-						!Array.isArray(spec.state?.board) ||
-						!Array.isArray(spec.state.board[0])
-					) {
-						return null;
+	return isTablet || isDesktop ? (
+		<div className="flex flex-row gap-4 p-4">
+			<div className="flex-1 grid grid-cols-3 grid-rows-3 gap-4 flex-wrap ">
+				{Object.entries(spectrums).map(([id, spec], index: number) => {
+					if (index / 2 === 0) {
+						return (
+							<Board
+								key={id}
+								state={spec.state.board}
+								score={spec.state.score}
+								playerName={spec.playerName}
+							/>
+						);
 					}
-
-					return (
-						<div key={id} className="border p-1">
-							<div className="text-md text-center text-gray-100 mb-1">
-								{spec.playerName}
-							</div>
-							<div className="grid grid-cols-10 gap-0.5">
-								{spec.state.board.flat().map((cell, idx) => {
-									const y = Math.floor(idx / BOARD_WIDTH);
-									return (
-										<div
-											key={idx}
-											className={`w-3 h-3 ${
-												cell
-													? `${
-															COLORS[cell] ||
-															"bg-white border-white"
-													  }`
-													: y < 2
-													? ""
-													: "bg-gray-900 border border-gray-700"
-											}`}
-										/>
-									);
-								})}
-							</div>
-						</div>
-					);
 				})}
-			</div>{" "}
-			{
-				gameOver && (
-					<ExitModal userScore={gameState.score} />
-				)
-			}
+			</div>
+			<div className="flex-1">
+				<Board
+					state={boardWithPiece}
+					playerName={playerName}
+					score={gameState.score}
+					isMain={true}
+				/>
+			</div>
+			<div className="flex-1 grid grid-cols-3 grid-rows-3 gap-4">
+				{Object.entries(spectrums).map(([id, spec], index: number) => {
+					if (index / 2 !== 0) {
+						return (
+							<Board
+								key={id}
+								state={spec.state.board}
+								score={spec.state.score}
+								playerName={spec.playerName}
+							/>
+						);
+					}
+				})}
+			</div>
+			{gameOver && <ExitModal userScore={gameState.score} />}
+		</div>
+	) : (
+		<div className="flex flex-col items-center p-4">
+			<Board
+				state={boardWithPiece}
+				playerName={playerName}
+				score={gameState.score}
+				isMain={true}
+			/>
+			<div className="flex flex-row gap-4 mt-4 flex-wrap justify-center">
+				{Object.entries(spectrums).map(([id, spec], index: number) => (
+					<Board
+						key={id}
+						state={spec.state.board}
+						score={spec.state.score}
+						playerName={spec.playerName}
+					/>
+				))}
+			</div>
+			{gameOver && <ExitModal userScore={gameState.score} />}
 		</div>
 	);
 };

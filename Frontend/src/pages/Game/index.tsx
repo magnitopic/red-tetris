@@ -7,45 +7,49 @@ import { useParams } from "react-router-dom";
 import WaitingModal from "./WaitingModal";
 
 interface Spectrum {
-  state: GameState;
-  playerName: string;
+	state: GameState;
+	playerName: string;
 }
 
 interface Player {
-  id: string;
-  name: string;
+	id: string;
+	name: string;
 }
 
-
 const index: React.FC = () => {
-  let { clientRoomId } = useParams();
-  const { user } = useAuth();
-  const [isHost, setIsHost] = useState(false);
+	let { clientRoomId } = useParams();
+	const { user } = useAuth();
+	const [isHost, setIsHost] = useState(false);
 	const [currentPlayers, setCurrentPlayers] = useState<Player[]>([]);
-  const [seed, setSeed] = useState("");
-  const [playing, setPlaying] = useState(false);
-  const socketRef = useRef(null);
+	const [seed, setSeed] = useState("");
+	const [playing, setPlaying] = useState(false);
+	const socketRef = useRef(null);
 	const [showWaitingModal, setShowWaitingModal] = useState(false);
 
-  // Left players
-  const removedIds = useRef<Set<string>>(new Set());
+	// Left players
+	const removedIds = useRef<Set<string>>(new Set());
 
-  const [gameState, setGameState] = useState(null);
-  const [spectrums, setSpectrums] = useState<{[playerId: string]: Spectrum;}>({});
+	const [gameState, setGameState] = useState(null);
+	const [spectrums, setSpectrums] = useState<{
+		[playerId: string]: Spectrum;
+	}>({});
 
-  const playerName = user?.username;
-  const userId = user?.id;
+	const playerName = user?.username;
+	const userId = user?.id;
 
-  const BOARD_WIDTH = 10;
-  const BOARD_HEIGHT = 22;
-
+	const BOARD_WIDTH = 10;
+	const BOARD_HEIGHT = 22;
 
 	useEffect(() => {
+		// Check if the page was reloaded and redirect to /play
 		const navigationEntries = performance.getEntriesByType("navigation");
 
-		if (navigationEntries.length > 0 && navigationEntries[0].type === "reload") {
-		console.log("Page was reloaded");
-		window.location.href = "/play";
+		if (
+			navigationEntries.length > 0 &&
+			navigationEntries[0].type === "reload"
+		) {
+			console.log("Page was reloaded");
+			window.location.href = "/play";
 		}
 	}, []);
 
@@ -60,7 +64,7 @@ const index: React.FC = () => {
 			console.log("Connected to server");
 		});
 
-		const gameSpeed = clientRoomId === "newRegular"? 300 : 100
+		const gameSpeed = clientRoomId === "newRegular" ? 300 : 100;
 		if (clientRoomId === "newRegular" || clientRoomId === "newHardcore")
 			clientRoomId = String(Math.floor(100000 + Math.random() * 900000));
 		else clientRoomId = String(parseInt(clientRoomId ?? "0"));
@@ -104,13 +108,14 @@ const index: React.FC = () => {
 			]);
 		});
 
-
 		socket.on("player_left", ({ playerId, userId }) => {
 			console.log(`Player left: ${playerId}`);
 			removedIds.current.add(playerId);
 			if (userId) removedIds.current.add(userId);
 			setCurrentPlayers((prev) =>
-				prev.filter((player) => player.id !== playerId && player.id !== userId)
+				prev.filter(
+					(player) => player.id !== playerId && player.id !== userId
+				)
 			);
 			setSpectrums((prev) => {
 				const newSpectrums = { ...prev };
@@ -157,12 +162,9 @@ const index: React.FC = () => {
 
 			// Prevent default behavior for game keys
 			if (
-				[
-					"ArrowLeft",
-					"ArrowRight",
-					"ArrowUp",
-					"ArrowDown",
-				].includes(e.key)
+				["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(
+					e.key
+				)
 			) {
 				e.preventDefault();
 			}
@@ -185,10 +187,13 @@ const index: React.FC = () => {
 		const socket = socketRef.current;
 		if (!socket) return;
 
-		socket.on("game_already_started", ({ message }: { message: string }) => {
-			console.log(message);
-			setShowWaitingModal(true);
-		});
+		socket.on(
+			"game_already_started",
+			({ message }: { message: string }) => {
+				console.log(message);
+				setShowWaitingModal(true);
+			}
+		);
 
 		return () => {
 			socket.off("game_already_started");
@@ -200,7 +205,7 @@ const index: React.FC = () => {
 			{showWaitingModal && <WaitingModal />}
 			{playing && !gameState ? (
 				<div className="text-center mt-10 text-xl text-gray-500">
-					Loading game here...
+					Game is being played with this user in another tab.
 				</div>
 			) : playing && gameState ? (
 				<GameScreen
