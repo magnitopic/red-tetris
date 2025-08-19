@@ -14,6 +14,7 @@ export const socketSessionMiddleware = () => (socket, next) => {
     } catch (error) {
         console.error('ERROR:', error);
         handleError(socket, StatusMessage.ERROR_PARSING_COOKIES);
+        return next();
     }
 
     let accessToken = parsedCookies?.access_token;
