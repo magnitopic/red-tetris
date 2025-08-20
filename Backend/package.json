@@ -8,7 +8,7 @@
     "format": "prettier --write .",
     "fixtures": "node /backend/src/Fixtures/loadFixtures.js",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand",
-    "test-cov": "NODE_OPTIONS=--experimental-vm-modules jest --coverage"
+    "test-cov": "NODE_OPTIONS=--experimental-vm-modules jest --coverage --silent"
   },
   "jest": {
     "testEnvironment": "node",
