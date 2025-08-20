@@ -17,8 +17,12 @@ jest.unstable_mockModule('../../../src/Game/Player.js', () => ({ Player: jest.fn
 jest.unstable_mockModule('../../../src/Game/Game.js', () => ({ default: jest.fn() }));
 jest.unstable_mockModule('../../../src/Models/GameModel.js', 
   () => ({ default: { createOrUpdate: jest.fn(), updateByReference: jest.fn() } }));
-jest.unstable_mockModule('../../../src/Models/GamePlayersModel.js', 
-  () => ({ default: { create: jest.fn(), updateByReference: jest.fn(), getTopPlayers: jest.fn() } }));
+
+const GamePlayersModelModule = await import('../../../src/Models/GamePlayersModel.js');
+const gamePlayersModel = GamePlayersModelModule.default;
+jest.spyOn(gamePlayersModel, 'create').mockImplementation(jest.fn());
+jest.spyOn(gamePlayersModel, 'updateByReference').mockImplementation(jest.fn());
+jest.spyOn(gamePlayersModel, 'getTopPlayers').mockImplementation(jest.fn());
 
 const GameServerModule = await import('../../../src/Core/GameServer.js');
 const createSocketServer = GameServerModule.default || GameServerModule;

@@ -8,13 +8,13 @@ class GamePlayersModel extends Model {
     async getTopPlayers(limit = 10) {
         const query = {
             text: `
-        SELECT u.id, u.username, u.profile_picture AS profilePicture, SUM(gp.score) AS score
-        FROM game_players gp
-        JOIN users u ON gp.user_id = u.id
-        GROUP BY u.id, u.username, u.profile_picture
-        ORDER BY score DESC
-        LIMIT $1;
-      `,
+                SELECT u.id, u.username, u.profile_picture AS profilePicture, SUM(gp.score) AS score
+                FROM game_players gp
+                JOIN users u ON gp.user_id = u.id
+                GROUP BY u.id, u.username, u.profile_picture
+                ORDER BY score DESC
+                LIMIT $1;
+            `,
             values: [limit],
         };
 
