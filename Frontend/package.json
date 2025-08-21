@@ -10,9 +10,9 @@
 		"lint": "eslint .",
 		"preview": "vite preview",
 		"test": "jest",
-		"test:watch": "jest --watch",
-		"test:coverage": "jest --coverage",
-		"test:ui": "jest --watch --verbose"
+		"test-watch": "jest --watch",
+		"test-cov": "jest --coverage",
+		"test-ui": "jest --watch --verbose"
 	},
 	"dependencies": {
 		"bad-words": "~4.0.0",

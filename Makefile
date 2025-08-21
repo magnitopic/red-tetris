@@ -42,6 +42,9 @@ test-backend-cov:
 test-frontend: 
 	@cd ./Frontend && npm run test
 
+test-frontend-cov:
+	@cd ./Frontend && npm run test-cov
+
 restart: down
 	@echo "$(GREEN)<-> STARTING CONTAINERS <-> $(COLOR_OFF)"
 	@docker compose -f $(DOCKER_COMPOSE) up -d
