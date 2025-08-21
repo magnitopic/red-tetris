@@ -89,6 +89,10 @@ const index: React.FC = () => {
 			setSeed(seed);
 		});
 
+		socket.on("invalid_user", () => {
+			window.location.href = "/play"; //TODO: what to do?
+		});
+
 		socket.on("new_host", ({ newHost, players }) => {
 			console.log("newHost", newHost);
 			if (playerName == newHost) setIsHost(true);
