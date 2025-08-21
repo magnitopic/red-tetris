@@ -14,6 +14,11 @@ await jest.unstable_mockModule('jsonwebtoken', () => ({ default: { verify: jest.
 const socketUtils = await import('../../../src/Utils/socketUtils.js');
 
 describe('socketUtils', () => {
+  beforeAll(() => {
+    jest.spyOn(console, 'log').mockImplementation(() => {});
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
   it('handleError emits and disconnects', () => {
     const socket = { emit: jest.fn(), disconnect: jest.fn() };
     socketUtils.handleError(socket, 'err');

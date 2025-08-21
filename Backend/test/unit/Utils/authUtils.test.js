@@ -1,5 +1,9 @@
 import { jest } from '@jest/globals';
 
+beforeAll(() => {
+  jest.spyOn(console, 'error').mockImplementation(() => {});
+});
+
 // Mock all dependencies before import
 await jest.unstable_mockModule('../../../src/Models/UserModel.js', () => ({
   default: { findOne: jest.fn().mockResolvedValue([{ id: 1 }]), update: jest.fn().mockResolvedValue([{}]) }

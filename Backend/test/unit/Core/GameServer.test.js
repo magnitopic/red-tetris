@@ -1,5 +1,9 @@
-
 import { jest } from '@jest/globals';
+
+// --- MOCKS ---
+await jest.unstable_mockModule('../../../src/Utils/dataBaseConnection.js', () => ({
+  default: { query: jest.fn() }
+}));
 
 beforeAll(() => {
   jest.spyOn(console, 'log').mockImplementation(() => {});
@@ -7,7 +11,6 @@ beforeAll(() => {
 });
 
 
-// --- MOCKS ---
 const mockServer = jest.fn();
 const mockSocketIo = jest.fn(() => ({
   on: jest.fn(),

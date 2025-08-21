@@ -1,6 +1,10 @@
 import { jest } from '@jest/globals';
 
 // --- MOCKS ---
+await jest.unstable_mockModule('../../../src/Utils/dataBaseConnection.js', () => ({
+  default: { query: jest.fn() }
+}));
+
 const GamePlayersModelModule = await import('../../../src/Models/GamePlayersModel.js');
 const gamePlayersModel = GamePlayersModelModule.default;
 jest.spyOn(gamePlayersModel, 'getByReference').mockImplementation(jest.fn());
