@@ -36,6 +36,9 @@ backend: volumes
 test-backend: 
 	@cd ./Backend && npm run test
 
+test-backend-file: 
+	@cd ./Backend && npm run test -- $(FILE)
+
 test-backend-cov: 
 	@cd ./Backend && npm run test-cov
 
