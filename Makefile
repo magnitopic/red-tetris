@@ -71,4 +71,4 @@ fclean: down remove_data
 re: fclean build
 	@echo "$(GREEN)<-> RESETTING CONTAINERS <-> $(COLOR_OFF)"
 
-.PHONY: all build up stop remove_data down fclean restart volumes re
+.PHONY: all build up stop remove_data down fclean restart volumes re frontend test-frontend test-frontend-cov backend test-backend test-backend-cov

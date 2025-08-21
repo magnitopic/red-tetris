@@ -3,7 +3,6 @@ import { useAuth } from "../../context/AuthContext";
 import ProfileHeader from "./ProfileHeader";
 import Images from "../../components/profile/Images";
 import LikesAndViews from "./LikesAndViews";
-import TagSection from "../../components/profile/TagSection";
 import { useProfile } from "../../hooks/PageData/useProfile";
 import Spinner from "../../components/common/Spinner";
 
@@ -18,7 +17,6 @@ interface UserData {
 	profile_picture: string;
 	gender: string;
 	sexual_preference: string;
-	tags: string[];
 	images: string[];
 }
 
