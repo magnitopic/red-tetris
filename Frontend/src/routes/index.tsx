@@ -7,7 +7,6 @@ import ProtectedRoute from "./ProtectedRoute";
 import Play from "../pages/Play";
 import Authenticate from "../pages/Authenticate";
 import Profile from "../pages/Profile";
-import ProfileEdit from "../pages/ProfileEdit";
 import PublicProfile from "../pages/PublicProfile";
 import Oauth from "../pages/Callbacks/Oauth";
 

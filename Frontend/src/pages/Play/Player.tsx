@@ -1,7 +1,16 @@
 import React from "react";
 import UserBubbles from "../../components/common/UserBubbles";
 
-const Player: React.FC = ({ playerData, id }) => {
+interface PlayerProps {
+	playerData: {
+		username: string;
+		score: number;
+		id?: string;
+	};
+	id: number;
+}
+
+const Player: React.FC<PlayerProps> = ({ playerData, id }) => {
 	return (
 		<div
 			className={`flex flex-row justify-between items-center p-6 border-b border-font-secondary w-full ${

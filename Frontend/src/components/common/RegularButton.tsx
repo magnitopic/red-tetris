@@ -4,6 +4,7 @@ interface RegularButtonProps {
 	disabled?: boolean;
 	type?: "button" | "submit";
 	icon?: string;
+	alternative?: boolean;
 }
 
 const RegularButton = ({

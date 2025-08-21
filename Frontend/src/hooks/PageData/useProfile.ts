@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { profileApi, ProfileData } from "../../services/api/profile";
+import { profileApi } from "../../services/api/profile";
 
 export const useProfile = (userId: string) => {
-	const [profile, setProfile] = useState<ProfileData | null>(null);
+	const [profile, setProfile] = useState(null);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 

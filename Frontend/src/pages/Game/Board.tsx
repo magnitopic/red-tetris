@@ -1,6 +1,18 @@
 import React from "react";
 
-const Board: React.FC = ({ state, playerName, score, isMain = false }) => {
+interface BoardProps {
+	state: number[][];
+	playerName: string;
+	score: number;
+	isMain?: boolean; // for styling
+}
+
+const Board: React.FC<BoardProps> = ({
+	state,
+	playerName,
+	score,
+	isMain = false,
+}) => {
 	const BOARD_WIDTH = 10;
 	const BOARD_HEIGHT = 22;
 

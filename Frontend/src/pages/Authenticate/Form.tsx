@@ -8,7 +8,6 @@ import OauthGithubButton from "../../components/common/oauthButtons/OauthGithubB
 import OauthTwitchButton from "../../components/common/oauthButtons/OauthTwitchButton";
 import { useAuth } from "../../context/AuthContext";
 import RegularButton from "../../components/common/RegularButton";
-import ResetPassword from "./ResetPassword";
 
 const AuthenticateForm: React.FC = () => {
 	const { authenticate } = useAuth();

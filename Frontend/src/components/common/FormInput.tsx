@@ -7,6 +7,7 @@ interface FormInputProps {
 	value: string;
 	onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 	error?: string;
+	disabled?: boolean;
 }
 
 const FormInput: React.FC<FormInputProps> = ({
@@ -16,6 +17,7 @@ const FormInput: React.FC<FormInputProps> = ({
 	value,
 	onChange,
 	error,
+	disabled = false,
 }) => {
 	return (
 		<div className="w-full">
@@ -29,6 +31,7 @@ const FormInput: React.FC<FormInputProps> = ({
 					error ? "border-red-500" : "border-gray-300"
 				} rounded-md w-full p-3 my-1`}
 				placeholder={placeholder}
+				disabled={disabled}
 			/>
 			{error && <p className="text-red-500 text-sm mt-1">{error}</p>}
 		</div>

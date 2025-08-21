@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { usersApi } from "../../services/api/users";
-import { ProfileData } from "../../services/api/profile";
 
 export const usePublicProfile = (username: string) => {
-	const [profile, setProfile] = useState<ProfileData | null>(null);
+	const [profile, setProfile] = useState(null);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [notFound, setNotFound] = useState(false);
