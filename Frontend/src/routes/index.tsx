@@ -9,6 +9,7 @@ import Authenticate from "../pages/Authenticate";
 import Profile from "../pages/Profile";
 import PublicProfile from "../pages/PublicProfile";
 import Oauth from "../pages/Callbacks/Oauth";
+import EmptyGame from "../pages/Game/EmptyGame";
 
 const protectedRoutes = {
 	profile: {
@@ -24,6 +25,14 @@ const protectedRoutes = {
 		element: (
 			<ProtectedRoute>
 				<PublicProfile />
+			</ProtectedRoute>
+		),
+	},
+	gameEmpty: {
+		path: "game",
+		element: (
+			<ProtectedRoute>
+				<EmptyGame />
 			</ProtectedRoute>
 		),
 	},

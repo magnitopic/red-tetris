@@ -5,6 +5,7 @@ import { useEffect, useState, useRef } from "react";
 import { io } from "socket.io-client";
 import { useParams } from "react-router-dom";
 import WaitingModal from "./WaitingModal";
+import { useNavigate } from "react-router-dom";
 
 interface Spectrum {
 	state: GameState;
@@ -17,6 +18,7 @@ interface Player {
 }
 
 const index: React.FC = () => {
+	const navigate = useNavigate();
 	let { clientRoomId } = useParams();
 	const { user } = useAuth();
 	const [isHost, setIsHost] = useState(false);
@@ -67,7 +69,26 @@ const index: React.FC = () => {
 		const gameSpeed = clientRoomId === "newRegular" ? 300 : 100;
 		if (clientRoomId === "newRegular" || clientRoomId === "newHardcore")
 			clientRoomId = String(Math.floor(100000 + Math.random() * 900000));
-		else clientRoomId = String(parseInt(clientRoomId ?? "0"));
+		else {
+			if (!clientRoomId) {
+				navigate("/play", {
+					state: { error: "Room code is required to join a game." },
+				});
+				return;
+			} else if (
+				isNaN(parseInt(clientRoomId)) ||
+				clientRoomId.length !== 6
+			) {
+				navigate("/play", {
+					state: {
+						error: "Invalid room code. Please check the code and try again.",
+					},
+				});
+				return;
+			} else {
+				clientRoomId = String(parseInt(clientRoomId ?? "0"));
+			}
+		}
 
 		socket.emit("join_room", {
 			room: clientRoomId,
@@ -144,7 +165,7 @@ const index: React.FC = () => {
 		return () => {
 			socket.disconnect();
 		};
-	}, [playerName, userId]);
+	}, [playerName, userId, navigate]);
 
 	useEffect(() => {
 		const socket = socketRef.current;
