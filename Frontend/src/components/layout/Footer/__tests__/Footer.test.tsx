@@ -31,7 +31,10 @@ describe("Footer Component", () => {
 			);
 
 			expect(screen.getByText("Red Tetris")).toBeInTheDocument();
-			expect(screen.getByText("Red Tetris")).toHaveClass("text-2xl", "font-bold");
+			expect(screen.getByText("Red Tetris")).toHaveClass(
+				"text-2xl",
+				"font-bold"
+			);
 		});
 
 		it("should display copyright with current year", () => {
@@ -43,7 +46,7 @@ describe("Footer Component", () => {
 
 			const currentYear = new Date().getFullYear();
 			const copyrightText = `© ${currentYear} - All rights reserved`;
-			
+
 			expect(screen.getByText(copyrightText)).toBeInTheDocument();
 			expect(screen.getByText(copyrightText)).toHaveClass("font-thin");
 		});
@@ -73,7 +76,7 @@ describe("Footer Component", () => {
 
 			const alaparicLink = screen.getByRole("link", { name: "alaparic" });
 			expect(alaparicLink).toHaveAttribute(
-				"href", 
+				"href",
 				"https://profile.intra.42.fr/users/alaparic"
 			);
 		});
@@ -87,7 +90,7 @@ describe("Footer Component", () => {
 
 			const adiazLink = screen.getByRole("link", { name: "adiaz-uf" });
 			expect(adiazLink).toHaveAttribute(
-				"href", 
+				"href",
 				"https://profile.intra.42.fr/users/adiaz-uf"
 			);
 		});
@@ -153,7 +156,7 @@ describe("Footer Component", () => {
 
 			const footer = screen.getByRole("contentinfo");
 			const container = footer.querySelector("div");
-			
+
 			expect(container).toHaveClass(
 				"container",
 				"flex",
@@ -192,7 +195,7 @@ describe("Footer Component", () => {
 			// Check that both author links are present
 			expect(screen.getByText("alaparic")).toBeInTheDocument();
 			expect(screen.getByText("adiaz-uf")).toBeInTheDocument();
-			
+
 			// Check that " & " separator exists between authors using a more flexible matcher
 			const paragraph = screen.getByText("alaparic").closest("p");
 			expect(paragraph).toHaveTextContent("alaparic & adiaz-uf");
@@ -224,7 +227,9 @@ describe("Footer Component", () => {
 
 			// First render
 			expect(screen.getByText("Red Tetris")).toBeInTheDocument();
-			expect(screen.getByRole("link", { name: "alaparic" })).toBeInTheDocument();
+			expect(
+				screen.getByRole("link", { name: "alaparic" })
+			).toBeInTheDocument();
 
 			// Re-render
 			rerender(
@@ -235,7 +240,9 @@ describe("Footer Component", () => {
 
 			// Should still be there
 			expect(screen.getByText("Red Tetris")).toBeInTheDocument();
-			expect(screen.getByRole("link", { name: "alaparic" })).toBeInTheDocument();
+			expect(
+				screen.getByRole("link", { name: "alaparic" })
+			).toBeInTheDocument();
 		});
 
 		it("should handle component unmounting gracefully", () => {
@@ -275,8 +282,12 @@ describe("Footer Component", () => {
 			);
 
 			// Links should have descriptive text
-			expect(screen.getByRole("link", { name: "alaparic" })).toBeInTheDocument();
-			expect(screen.getByRole("link", { name: "adiaz-uf" })).toBeInTheDocument();
+			expect(
+				screen.getByRole("link", { name: "alaparic" })
+			).toBeInTheDocument();
+			expect(
+				screen.getByRole("link", { name: "adiaz-uf" })
+			).toBeInTheDocument();
 		});
 
 		it("should have proper heading hierarchy", () => {
@@ -296,7 +307,7 @@ describe("Footer Component", () => {
 			// Mock Date to test different years
 			const originalDate = Date;
 			const mockDate = jest.fn(() => ({
-				getFullYear: () => 2025
+				getFullYear: () => 2025,
 			}));
 			global.Date = mockDate as any;
 
@@ -306,7 +317,9 @@ describe("Footer Component", () => {
 				</RouterWrapper>
 			);
 
-			expect(screen.getByText("© 2025 - All rights reserved")).toBeInTheDocument();
+			expect(
+				screen.getByText("© 2025 - All rights reserved")
+			).toBeInTheDocument();
 
 			// Restore original Date
 			global.Date = originalDate;
@@ -321,7 +334,7 @@ describe("Footer Component", () => {
 
 			const currentYear = new Date().getFullYear();
 			const expectedText = `© ${currentYear} - All rights reserved`;
-			
+
 			expect(screen.getByText(expectedText)).toBeInTheDocument();
 		});
 	});

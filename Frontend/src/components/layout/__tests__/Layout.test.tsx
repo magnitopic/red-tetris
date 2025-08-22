@@ -32,7 +32,9 @@ describe("Layout Component", () => {
 			);
 
 			// Check main layout container
-			const layoutContainer = screen.getByTestId("mock-header").closest("div");
+			const layoutContainer = screen
+				.getByTestId("mock-header")
+				.closest("div");
 			expect(layoutContainer).toHaveClass(
 				"min-h-screen",
 				"flex",
@@ -73,7 +75,7 @@ describe("Layout Component", () => {
 			// We can verify the structure by checking that Header and Footer are siblings
 			const header = screen.getByTestId("mock-header");
 			const footer = screen.getByTestId("mock-footer");
-			
+
 			expect(header.parentElement).toBe(footer.parentElement);
 		});
 	});
@@ -166,8 +168,12 @@ describe("Layout Component", () => {
 			);
 
 			// Header and Footer should be semantic elements
-			expect(screen.getByTestId("mock-header").tagName.toLowerCase()).toBe("header");
-			expect(screen.getByTestId("mock-footer").tagName.toLowerCase()).toBe("footer");
+			expect(
+				screen.getByTestId("mock-header").tagName.toLowerCase()
+			).toBe("header");
+			expect(
+				screen.getByTestId("mock-footer").tagName.toLowerCase()
+			).toBe("footer");
 		});
 
 		it("should maintain proper document structure", () => {
@@ -178,7 +184,7 @@ describe("Layout Component", () => {
 			);
 
 			const container = screen.getByTestId("mock-header").parentElement;
-			
+
 			// Container should be a div with appropriate ARIA structure
 			expect(container?.tagName.toLowerCase()).toBe("div");
 			expect(container).toHaveClass("min-h-screen");

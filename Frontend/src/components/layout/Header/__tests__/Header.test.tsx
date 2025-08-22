@@ -6,31 +6,33 @@ import Header from "../Header";
 
 // Mock the dependencies
 jest.mock("../../../../hooks/useBreakpoints", () => ({
-	useBreakpoints: jest.fn()
+	useBreakpoints: jest.fn(),
 }));
 
 jest.mock("../../../../context/AuthContext", () => ({
-	useAuth: jest.fn()
+	useAuth: jest.fn(),
 }));
 
 jest.mock("../../../../services/api/users", () => ({
 	usersApi: {
-		getMe: jest.fn()
-	}
+		getMe: jest.fn(),
+	},
 }));
 
 // Mock react-router-dom hooks
 const mockNavigate = jest.fn();
 jest.mock("react-router-dom", () => ({
 	...jest.requireActual("react-router-dom"),
-	useNavigate: () => mockNavigate
+	useNavigate: () => mockNavigate,
 }));
 
 import { useBreakpoints } from "../../../../hooks/useBreakpoints";
 import { useAuth } from "../../../../context/AuthContext";
 import { usersApi } from "../../../../services/api/users";
 
-const mockUseBreakpoints = useBreakpoints as jest.MockedFunction<typeof useBreakpoints>;
+const mockUseBreakpoints = useBreakpoints as jest.MockedFunction<
+	typeof useBreakpoints
+>;
 const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
 
 // Wrapper component to provide React Router context
@@ -42,10 +44,10 @@ describe("Header Component", () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
 		mockNavigate.mockClear();
-		
+
 		// Default API mock to prevent console errors
 		(usersApi.getMe as jest.Mock).mockResolvedValue({
-			msg: { username: "testuser" }
+			msg: { username: "testuser" },
 		});
 	});
 
@@ -54,13 +56,13 @@ describe("Header Component", () => {
 			mockUseBreakpoints.mockReturnValue({
 				isMobile: false,
 				isTablet: false,
-				isDesktop: true
+				isDesktop: true,
 			});
 			mockUseAuth.mockReturnValue({
 				isAuthenticated: false,
 				user: null,
 				logout: jest.fn(),
-				refreshUserData: jest.fn()
+				refreshUserData: jest.fn(),
 			});
 		});
 
@@ -72,7 +74,10 @@ describe("Header Component", () => {
 			);
 
 			expect(screen.getByText("Red Tetris")).toBeInTheDocument();
-			expect(screen.getByText("Red Tetris").closest("h1")).toHaveClass("text-3xl", "font-bold");
+			expect(screen.getByText("Red Tetris").closest("h1")).toHaveClass(
+				"text-3xl",
+				"font-bold"
+			);
 		});
 
 		it("should render navigation links on desktop", () => {
@@ -82,9 +87,15 @@ describe("Header Component", () => {
 				</RouterWrapper>
 			);
 
-			expect(screen.getByRole("link", { name: "Home" })).toBeInTheDocument();
-			expect(screen.getByRole("link", { name: "Play" })).toBeInTheDocument();
-			expect(screen.getByRole("link", { name: "Profile" })).toBeInTheDocument();
+			expect(
+				screen.getByRole("link", { name: "Home" })
+			).toBeInTheDocument();
+			expect(
+				screen.getByRole("link", { name: "Play" })
+			).toBeInTheDocument();
+			expect(
+				screen.getByRole("link", { name: "Profile" })
+			).toBeInTheDocument();
 		});
 
 		it("should render Enter button when not authenticated", () => {
@@ -106,8 +117,12 @@ describe("Header Component", () => {
 				</RouterWrapper>
 			);
 
-			expect(screen.queryByLabelText("Open menu")).not.toBeInTheDocument();
-			expect(screen.queryByLabelText("Close menu")).not.toBeInTheDocument();
+			expect(
+				screen.queryByLabelText("Open menu")
+			).not.toBeInTheDocument();
+			expect(
+				screen.queryByLabelText("Close menu")
+			).not.toBeInTheDocument();
 		});
 	});
 
@@ -119,13 +134,13 @@ describe("Header Component", () => {
 			mockUseBreakpoints.mockReturnValue({
 				isMobile: false,
 				isTablet: false,
-				isDesktop: true
+				isDesktop: true,
 			});
 			mockUseAuth.mockReturnValue({
 				isAuthenticated: true,
 				user: mockUser,
 				logout: mockLogout,
-				refreshUserData: jest.fn()
+				refreshUserData: jest.fn(),
 			});
 		});
 
@@ -146,7 +161,9 @@ describe("Header Component", () => {
 				</RouterWrapper>
 			);
 
-			expect(screen.getByRole("button", { name: "Logout" })).toBeInTheDocument();
+			expect(
+				screen.getByRole("button", { name: "Logout" })
+			).toBeInTheDocument();
 		});
 
 		it("should call logout function when logout button is clicked", async () => {
@@ -189,13 +206,13 @@ describe("Header Component", () => {
 			mockUseBreakpoints.mockReturnValue({
 				isMobile: true,
 				isTablet: false,
-				isDesktop: false
+				isDesktop: false,
 			});
 			mockUseAuth.mockReturnValue({
 				isAuthenticated: false,
 				user: null,
 				logout: jest.fn(),
-				refreshUserData: jest.fn()
+				refreshUserData: jest.fn(),
 			});
 		});
 
@@ -217,7 +234,7 @@ describe("Header Component", () => {
 			);
 
 			// Desktop navigation container should not be present on mobile
-			const desktopNav = container.querySelector('nav.flex.flex-1.ml-20');
+			const desktopNav = container.querySelector("nav.flex.flex-1.ml-20");
 			expect(desktopNav).not.toBeInTheDocument();
 		});
 
@@ -240,13 +257,13 @@ describe("Header Component", () => {
 			mockUseBreakpoints.mockReturnValue({
 				isMobile: true,
 				isTablet: false,
-				isDesktop: false
+				isDesktop: false,
 			});
 			mockUseAuth.mockReturnValue({
 				isAuthenticated: false,
 				user: null,
 				logout: jest.fn(),
-				refreshUserData: jest.fn()
+				refreshUserData: jest.fn(),
 			});
 		});
 
@@ -293,13 +310,13 @@ describe("Header Component", () => {
 			mockUseBreakpoints.mockReturnValue({
 				isMobile: true,
 				isTablet: false,
-				isDesktop: false
+				isDesktop: false,
 			});
 			mockUseAuth.mockReturnValue({
 				isAuthenticated: true,
 				user: mockUser,
 				logout: mockLogout,
-				refreshUserData: jest.fn()
+				refreshUserData: jest.fn(),
 			});
 		});
 
@@ -327,7 +344,9 @@ describe("Header Component", () => {
 			const menuButton = screen.getByLabelText("Open menu");
 			fireEvent.click(menuButton);
 
-			expect(screen.getByRole("button", { name: "Logout" })).toBeInTheDocument();
+			expect(
+				screen.getByRole("button", { name: "Logout" })
+			).toBeInTheDocument();
 		});
 	});
 
@@ -336,13 +355,13 @@ describe("Header Component", () => {
 			mockUseBreakpoints.mockReturnValue({
 				isMobile: false,
 				isTablet: false,
-				isDesktop: true
+				isDesktop: true,
 			});
 			mockUseAuth.mockReturnValue({
 				isAuthenticated: false,
 				user: null,
 				logout: jest.fn(),
-				refreshUserData: jest.fn()
+				refreshUserData: jest.fn(),
 			});
 		});
 
@@ -354,7 +373,12 @@ describe("Header Component", () => {
 			);
 
 			const header = screen.getByRole("banner");
-			expect(header).toHaveClass("transition-all", "duration-300", "z-30", "bg-primary");
+			expect(header).toHaveClass(
+				"transition-all",
+				"duration-300",
+				"z-30",
+				"bg-primary"
+			);
 		});
 
 		it("should have correct navigation button styling", () => {
@@ -389,18 +413,18 @@ describe("Header Component", () => {
 			mockUseBreakpoints.mockReturnValue({
 				isMobile: false,
 				isTablet: false,
-				isDesktop: true
+				isDesktop: true,
 			});
 			mockUseAuth.mockReturnValue({
 				isAuthenticated: true,
 				user: mockUser,
 				logout: jest.fn(),
-				refreshUserData: mockRefreshUserData
+				refreshUserData: mockRefreshUserData,
 			});
-			
+
 			// Mock successful API response
 			(usersApi.getMe as jest.Mock).mockResolvedValue({
-				msg: { username: "testuser" }
+				msg: { username: "testuser" },
 			});
 		});
 
@@ -437,13 +461,13 @@ describe("Header Component", () => {
 			mockUseBreakpoints.mockReturnValue({
 				isMobile: false,
 				isTablet: false,
-				isDesktop: true
+				isDesktop: true,
 			});
 			mockUseAuth.mockReturnValue({
 				isAuthenticated: false,
 				user: null,
 				logout: jest.fn(),
-				refreshUserData: jest.fn()
+				refreshUserData: jest.fn(),
 			});
 		});
 
@@ -469,13 +493,13 @@ describe("Header Component", () => {
 			mockUseBreakpoints.mockReturnValue({
 				isMobile: true,
 				isTablet: false,
-				isDesktop: false
+				isDesktop: false,
 			});
 			mockUseAuth.mockReturnValue({
 				isAuthenticated: false,
 				user: null,
 				logout: jest.fn(),
-				refreshUserData: jest.fn()
+				refreshUserData: jest.fn(),
 			});
 		});
 
