@@ -139,6 +139,10 @@ describe("GameScreen Component", () => {
 		});
 
 		it("should handle failed user data fetch gracefully", async () => {
+			// Suppress console.error for this test since we're intentionally triggering an error
+			const originalConsoleError = console.error;
+			console.error = jest.fn();
+
 			mockUsersApi.getMe.mockRejectedValueOnce(new Error("API Error"));
 
 			const { container } = render(
@@ -156,6 +160,9 @@ describe("GameScreen Component", () => {
 				);
 				expect(mainBoard).toHaveTextContent("Guest");
 			});
+
+			// Restore console.error
+			console.error = originalConsoleError;
 		});
 
 		it("should handle API response without username", async () => {

@@ -1,7 +1,20 @@
 import React from "react";
 import RegularButton from "../../components/common/RegularButton";
 
-const HostScreen: React.FC = ({
+interface Player {
+	id: string;
+	name: string;
+}
+
+interface HostScreenProps {
+	currentPlayers: Player[];
+	seed: string;
+	socket: any;
+	setPlaying: (playing: boolean) => void;
+	userId: string;
+}
+
+const HostScreen: React.FC<HostScreenProps> = ({
 	currentPlayers,
 	seed,
 	socket,
@@ -29,7 +42,7 @@ const HostScreen: React.FC = ({
 				</p>
 
 				<p className="text-lg font-semibold mt-2">
-					Connected players: {currentPlayers.length}
+					Connected players: {currentPlayers?.length || 0}
 				</p>
 			</section>
 			<section className="mt-8">

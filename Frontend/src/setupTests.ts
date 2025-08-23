@@ -77,7 +77,8 @@ console.error = (...args: any[]) => {
 			args[0].includes(
 				"When testing, code that causes React state updates should be wrapped into act"
 			) ||
-			args[0].includes("Error: Uncaught [ReferenceError"))
+			args[0].includes("Error: Uncaught [ReferenceError]") ||
+			args[0].includes("Error: Not implemented: navigation"))
 	) {
 		return;
 	}
