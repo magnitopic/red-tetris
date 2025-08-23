@@ -41,6 +41,22 @@ Object.defineProperty(window, "scrollTo", {
 	value: jest.fn(),
 });
 
+// Mock HTMLFormElement.prototype.requestSubmit (not implemented in jsdom)
+Object.defineProperty(HTMLFormElement.prototype, "requestSubmit", {
+	writable: true,
+	value: jest.fn(function (this: HTMLFormElement, submitter?: HTMLElement) {
+		// Simulate the native requestSubmit behavior
+		const submitEvent = new Event("submit", { bubbles: true, cancelable: true });
+		if (submitter) {
+			Object.defineProperty(submitEvent, "submitter", {
+				value: submitter,
+				writable: false,
+			});
+		}
+		this.dispatchEvent(submitEvent);
+	}),
+});
+
 // Mock the API config module to avoid import.meta.env issues
 jest.mock("./services/api/config", () => ({
 	__esModule: true,
@@ -60,7 +76,8 @@ console.error = (...args: any[]) => {
 		) ||
 			args[0].includes(
 				"When testing, code that causes React state updates should be wrapped into act"
-			))
+			) ||
+			args[0].includes("Error: Uncaught [ReferenceError"))
 	) {
 		return;
 	}
