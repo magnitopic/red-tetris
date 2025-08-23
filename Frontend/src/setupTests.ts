@@ -40,3 +40,29 @@ Object.defineProperty(window, "scrollTo", {
 	writable: true,
 	value: jest.fn(),
 });
+
+// Mock the API config module to avoid import.meta.env issues
+jest.mock("./services/api/config", () => ({
+	__esModule: true,
+	default: jest.fn().mockResolvedValue({ success: true, msg: {} }),
+	apiRequest: jest.fn().mockResolvedValue({ success: true, msg: {} }),
+	fileUploadRequest: jest.fn().mockResolvedValue({ success: true, msg: {} }),
+}));
+
+// Suppress React Testing Library act() warnings for testing hooks
+// These warnings don't affect test functionality but can be noisy
+const originalError = console.error;
+console.error = (...args: any[]) => {
+	if (
+		typeof args[0] === "string" &&
+		(args[0].includes(
+			"Warning: An update to TestComponent inside a test was not wrapped in act"
+		) ||
+			args[0].includes(
+				"When testing, code that causes React state updates should be wrapped into act"
+			))
+	) {
+		return;
+	}
+	originalError.call(console, ...args);
+};
