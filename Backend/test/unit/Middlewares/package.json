@@ -1,0 +1,6 @@
+{
+  "type": "module",
+  "jest": {
+    "setupFiles": ["./jest.setup.js"]
+  }
+}

@@ -7,6 +7,7 @@ import { randomUUID } from 'crypto';
 import { Player } from '../Game/Player.js';
 import Game from '../Game/Game.js';
 import gameModel from '../Models/GameModel.js';
+import userModel from '../Models/UserModel.js';
 import gamePlayersModel from '../Models/GamePlayersModel.js';
 
 export default function createSocketServer(httpServer) {
@@ -28,6 +29,13 @@ export default function createSocketServer(httpServer) {
       socket.on(
 		'join_room',
 		async ({ room, playerName, userId, width = 10, height = 22, speed = 500}) => {
+			const user = await userModel.getById({ id: userId });
+			if (!user || (Array.isArray(user) && user.length === 0)) {
+				socket.emit('invalid_user', {
+					message: 'Invalid user.',
+				});
+				return;
+			}
 			socket.userId = userId;
 			socketToUserId.set(socket.id, userId);
 			console.log(`Player ${playerName} joined room: ${room}`);
