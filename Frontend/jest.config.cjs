@@ -45,11 +45,9 @@ module.exports = {
 		"!src/App.tsx", // Main app component
 		"!src/routes/index.tsx", // Route configuration
 		"!src/services/api/config.ts", // Environment config
-		"!src/components/**/oauth*.tsx", // OAuth buttons (external redirects)
-		"!src/**/*Button.tsx", // Simple button components
+		"!src/components/**/Oauth*.tsx", // OAuth buttons (external redirects)
 		"!src/components/**/Form*.tsx", // Form components with complex props
 		"!src/context/AuthContext.tsx", // Complex context with API dependencies
-		"!src/components/layout/Header.tsx", // Complex header component
 		"!src/hooks/useMediaQuery.tsx", // Browser API dependencies
 		"!**/__tests__/**", // Test files themselves
 	],
