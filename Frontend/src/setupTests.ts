@@ -44,16 +44,19 @@ Object.defineProperty(window, "scrollTo", {
 // Mock HTMLFormElement.prototype.requestSubmit (not implemented in jsdom)
 Object.defineProperty(HTMLFormElement.prototype, "requestSubmit", {
 	writable: true,
-	value: jest.fn(function (this: HTMLFormElement, submitter?: HTMLElement) {
+	value: jest.fn(function (HTMLFormElement, submitter?: HTMLElement) {
 		// Simulate the native requestSubmit behavior
-		const submitEvent = new Event("submit", { bubbles: true, cancelable: true });
+		const submitEvent = new Event("submit", {
+			bubbles: true,
+			cancelable: true,
+		});
 		if (submitter) {
 			Object.defineProperty(submitEvent, "submitter", {
 				value: submitter,
 				writable: false,
 			});
 		}
-		this.dispatchEvent(submitEvent);
+		HTMLFormElement.dispatchEvent(submitEvent);
 	}),
 });
 
