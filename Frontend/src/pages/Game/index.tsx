@@ -178,7 +178,7 @@ const index: React.FC = () => {
 				setCurrentPlayers((prev) =>
 					prev.filter(
 						(player) =>
-							player.id !== playerId && player.id !== userId
+							player.id !== playerId && (userId ? player.id !== userId : true)
 					)
 				);
 				setSpectrums((prev) => {
