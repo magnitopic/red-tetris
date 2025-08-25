@@ -111,7 +111,7 @@ const index: React.FC = () => {
 		});
 
 		socket.on("invalid_user", () => {
-			window.location.href = "/play"; //TODO: what to do?
+			window.location.href = "/play";
 		});
 
 		socket.on("new_host", ({ newHost, players }) => {
