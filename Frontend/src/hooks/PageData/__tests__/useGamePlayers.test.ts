@@ -18,6 +18,7 @@ describe("useGamePlayers", () => {
 			expect(result.current.loading).toBe(false);
 			expect(result.current.error).toBe(null);
 			expect(typeof result.current.fetchRanking).toBe("function");
+			expect(typeof result.current.fetchGame).toBe("function");
 		});
 	});
 
@@ -105,6 +106,111 @@ describe("useGamePlayers", () => {
 
 			expect(result.current.error).toBe(null);
 			expect(rankingResult).toEqual(mockResponse);
+		});
+	});
+
+	describe("fetchGame", () => {
+		it("should handle successful game fetch", async () => {
+			const mockGameData = {
+				id: "123456",
+				finished: false,
+				players: ["player1", "player2"],
+				startTime: new Date().toISOString(),
+			};
+			const mockResponse = { success: true, msg: mockGameData };
+			mockGamePlayersApi.getGame.mockResolvedValue(mockResponse);
+
+			const { result } = renderHook(() => useGamePlayers());
+
+			let gameResult;
+			await act(async () => {
+				gameResult = await result.current.fetchGame("123456");
+			});
+
+			expect(mockGamePlayersApi.getGame).toHaveBeenCalledWith("123456");
+			expect(gameResult).toEqual(mockResponse);
+			expect(result.current.loading).toBe(false);
+			expect(result.current.error).toBe(null);
+		});
+
+		it("should handle API error with Error instance", async () => {
+			const errorMessage = "Game not found";
+			const mockError = new Error(errorMessage);
+			mockGamePlayersApi.getGame.mockRejectedValue(mockError);
+
+			const { result } = renderHook(() => useGamePlayers());
+
+			await act(async () => {
+				await expect(
+					result.current.fetchGame("123456")
+				).rejects.toThrow(errorMessage);
+			});
+
+			expect(result.current.loading).toBe(false);
+			expect(result.current.error).toBe(errorMessage);
+		});
+
+		it("should handle API error without Error instance", async () => {
+			const mockError = { status: 404, message: "Not found" };
+			mockGamePlayersApi.getGame.mockRejectedValue(mockError);
+
+			const { result } = renderHook(() => useGamePlayers());
+
+			await act(async () => {
+				await expect(
+					result.current.fetchGame("123456")
+				).rejects.toThrow("Failed to fetch game data");
+			});
+
+			expect(result.current.loading).toBe(false);
+			expect(result.current.error).toBe("Failed to fetch game data");
+		});
+
+		it("should handle different room IDs", async () => {
+			const mockGameData1 = { id: "123456", finished: false };
+			const mockGameData2 = { id: "789012", finished: true };
+			const mockResponse1 = { success: true, msg: mockGameData1 };
+			const mockResponse2 = { success: true, msg: mockGameData2 };
+
+			mockGamePlayersApi.getGame
+				.mockResolvedValueOnce(mockResponse1)
+				.mockResolvedValueOnce(mockResponse2);
+
+			const { result } = renderHook(() => useGamePlayers());
+
+			let result1, result2;
+			await act(async () => {
+				result1 = await result.current.fetchGame("123456");
+			});
+
+			await act(async () => {
+				result2 = await result.current.fetchGame("789012");
+			});
+
+			expect(mockGamePlayersApi.getGame).toHaveBeenCalledWith("123456");
+			expect(mockGamePlayersApi.getGame).toHaveBeenCalledWith("789012");
+			expect(result1).toEqual(mockResponse1);
+			expect(result2).toEqual(mockResponse2);
+		});
+
+		it("should handle game with finished status", async () => {
+			const mockGameData = {
+				id: "123456",
+				finished: true,
+				endTime: new Date().toISOString(),
+				winner: "player1",
+			};
+			const mockResponse = { success: true, msg: mockGameData };
+			mockGamePlayersApi.getGame.mockResolvedValue(mockResponse);
+
+			const { result } = renderHook(() => useGamePlayers());
+
+			let gameResult;
+			await act(async () => {
+				gameResult = await result.current.fetchGame("123456");
+			});
+
+			expect(gameResult).toEqual(mockResponse);
 		});
 	});
 

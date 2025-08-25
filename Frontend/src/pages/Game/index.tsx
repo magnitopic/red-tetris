@@ -59,7 +59,6 @@ const index: React.FC = () => {
 
 	const isGameFinished = async (roomId: string): Promise<boolean> => {
 		const gameData = await fetchGame(roomId);
-		console.log("gameData:", gameData);
 		return gameData.finished;
 	};
 
@@ -105,8 +104,6 @@ const index: React.FC = () => {
 					});
 					return;
 				} else {
-					console.log("Here");
-
 					// Check if game is finished
 					const gameFinished = await isGameFinished(clientRoomId);
 

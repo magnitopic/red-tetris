@@ -22,7 +22,10 @@ const HostScreen: React.FC<HostScreenProps> = ({
 	userId,
 }) => {
 	return (
-		<main className="flex flex-1 justify-center items-center flex-col w-full my-10">
+		<main
+			className="flex flex-1 justify-center items-center flex-col w-full my-10"
+			data-testid="host-screen"
+		>
 			<section className="flex justify-center items-center flex-col p-10 w-full text-center">
 				<h1 className="text-4xl font-bold mb-4">
 					You are the game host!
