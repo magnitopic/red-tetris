@@ -1,5 +1,6 @@
 import path from 'path';
 import gamePlayersModel from '../Models/GamePlayersModel.js';
+import db from '../Utils/dataBaseConnection.js';
 
 export default class GamePlayersController {
     static async getPlayerInGame(req, res) {
@@ -83,5 +84,33 @@ export default class GamePlayersController {
         });
 
         res.json(playersWithProfilePictures);
+    }
+
+    static async getIsPlaying({username}) {
+        try {
+    
+            const query = {
+                text: `
+                    SELECT EXISTS (
+                        SELECT 1
+                        FROM users u
+                        JOIN game_players gp ON u.id = gp.user_id
+                        JOIN games g ON gp.game_id = g.id
+                        WHERE u.username = $1
+                        AND g.finished = false
+                    ) AS is_playing;
+                `,
+                values: [username],
+            };
+    
+            const result = await db.query(query);
+    
+            const isPlaying = result.rows[0]?.is_playing ?? false;
+    
+            return isPlaying;
+        } catch (error) {
+            console.error('Error checking if user is playing:', error.message);
+            return null;
+        }
     }
 }

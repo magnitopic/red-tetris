@@ -9,6 +9,8 @@ import Game from '../Game/Game.js';
 import gameModel from '../Models/GameModel.js';
 import userModel from '../Models/UserModel.js';
 import gamePlayersModel from '../Models/GamePlayersModel.js';
+import GamePlayersController from '../Controllers/GamePlayersController.js';
+
 
 export default function createSocketServer(httpServer) {
     const io = new Server(httpServer, {
@@ -33,6 +35,14 @@ export default function createSocketServer(httpServer) {
 			if (!user || (Array.isArray(user) && user.length === 0)) {
 				socket.emit('invalid_user', {
 					message: 'Invalid user.',
+				});
+				return;
+			}
+			const userAlreadyPlaying = await GamePlayersController.getIsPlaying({ username: playerName });
+			console.log("is playing ?: ", userAlreadyPlaying);
+			if (userAlreadyPlaying) {
+				socket.emit('already_playing', {
+					message: 'User Already playing',
 				});
 				return;
 			}
@@ -243,7 +253,7 @@ export default function createSocketServer(httpServer) {
         }
 
         // Handle disconnect:
-        socket.on('disconnect', () => {
+        socket.on('disconnect', async() => {
             const userId = socketToUserId.get(socket.id);
             const player = players.get(userId);
             if (!player) return;
@@ -257,6 +267,11 @@ export default function createSocketServer(httpServer) {
 
                 if (gameRoom.players.size === 0) {
                     games.delete(room);
+					await gameModel.updateByReference(
+						{ finished: true },
+						{ game_seed: gameRoom.seed }
+				);
+					io.to(player.room).emit('match_finished');
                     console.log(`Room ${room} deleted.`);
                 } else {
                     // If host leaves, pick a new host:

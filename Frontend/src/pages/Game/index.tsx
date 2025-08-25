@@ -141,7 +141,15 @@ const index: React.FC = () => {
 			});
 
 			socket.on("invalid_user", () => {
-				window.location.href = "/play";
+				navigate("/play", {
+					state: { error: "Invalid user." },
+				});
+			});
+
+			socket.on("already_playing", () => {
+				navigate("/play", {
+					state: { error: "This user is already playing." },
+				});
 			});
 
 			socket.on("new_host", ({ newHost, players }) => {
