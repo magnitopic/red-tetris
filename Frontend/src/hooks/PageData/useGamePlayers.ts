@@ -21,5 +21,23 @@ export const useGamePlayers = () => {
 		}
 	};
 
-	return { fetchRanking, loading, error };
+	const fetchGame = async (roomId: string) => {
+		setLoading(true);
+		setError(null);
+		try {
+			const data = await gamePlayersApi.getGame(roomId);
+			return data;
+		} catch (err) {
+			const errorMessage =
+				err instanceof Error
+					? err.message
+					: "Failed to fetch game data";
+			setError(errorMessage);
+			throw new Error(errorMessage);
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	return { fetchRanking, fetchGame, loading, error };
 };

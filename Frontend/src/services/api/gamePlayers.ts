@@ -5,4 +5,8 @@ export const gamePlayersApi = {
 		const response = await apiRequest(`game-players/top-players`);
 		return response;
 	},
+	getGame: async (roomId: string) => {
+		const response = await apiRequest(`games/${roomId}`);
+		return response;
+	},
 };
