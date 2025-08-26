@@ -44,17 +44,19 @@ export default function createSocketServer(httpServer) {
                     });
                     return;
                 }
-                const userAlreadyPlaying =
-                    await GamePlayersController.getIsPlaying({
-                        username: playerName,
-                    });
-                console.log('is playing ?: ', userAlreadyPlaying);
-                if (userAlreadyPlaying) {
-                    socket.emit('already_playing', {
-                        message: 'User Already playing',
-                    });
-                    return;
-                }
+
+                // Check if player with same name is already playing a game
+                players.forEach((p) => {
+                    if (p.name === playerName) {
+                        socket.emit('already_playing', {
+                            message:
+                                'This user is already playing in another room.',
+                        });
+                        socket.disconnect();
+                        return;
+                    }
+                });
+
                 socket.userId = userId;
                 socketToUserId.set(socket.id, userId);
                 console.log(`Player ${playerName} joined room: ${room}`);
