@@ -3,6 +3,11 @@ import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import Player from "../Player";
 
+beforeAll(() => {
+	window.navigation = { navigate: jest.fn() };
+	HTMLFormElement.prototype.requestSubmit = jest.fn();
+});
+
 describe("Player", () => {
 	const mockPlayer = { username: "Alice", score: 42, id: "1" };
 

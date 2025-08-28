@@ -2,6 +2,11 @@ import { renderHook, act } from "@testing-library/react";
 import { useEditProfile } from "../useEditProfile";
 import { profileApi } from "../../../services/api/profile";
 
+beforeAll(() => {
+	window.navigation = { navigate: jest.fn() };
+	HTMLFormElement.prototype.requestSubmit = jest.fn();
+});
+
 // Mock the profile API
 jest.mock("../../../services/api/profile");
 const mockProfileApi = profileApi as jest.Mocked<typeof profileApi>;

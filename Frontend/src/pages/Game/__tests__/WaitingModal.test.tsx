@@ -1,6 +1,11 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import WaitingModal from "../WaitingModal";
 
+beforeAll(() => {
+	window.navigation = { navigate: jest.fn() };
+	HTMLFormElement.prototype.requestSubmit = jest.fn();
+});
+
 // Mock the Modal component
 jest.mock("../../../components/common/Modal", () => {
 	return function MockModal({ isOpen, children }: any) {

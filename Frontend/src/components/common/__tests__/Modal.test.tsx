@@ -3,6 +3,11 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import Modal from "../Modal";
 
+beforeAll(() => {
+	window.navigation = { navigate: jest.fn() };
+	HTMLFormElement.prototype.requestSubmit = jest.fn();
+});
+
 describe("Modal Component", () => {
 	const mockChildren = (
 		<div data-testid="modal-content">Test Modal Content</div>

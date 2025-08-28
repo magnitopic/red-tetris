@@ -4,6 +4,11 @@ import "@testing-library/jest-dom";
 import { MemoryRouter } from "react-router-dom";
 import Footer from "../Footer";
 
+beforeAll(() => {
+	window.navigation = { navigate: jest.fn() };
+	HTMLFormElement.prototype.requestSubmit = jest.fn();
+});
+
 // Wrapper component to provide React Router context
 const RouterWrapper = ({ children }: { children: React.ReactNode }) => (
 	<MemoryRouter>{children}</MemoryRouter>

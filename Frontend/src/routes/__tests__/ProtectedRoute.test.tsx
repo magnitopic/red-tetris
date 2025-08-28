@@ -5,6 +5,11 @@ import { AuthProvider } from "../../context/AuthContext";
 import { authApi } from "../../services/api/auth";
 import { usersApi } from "../../services/api/users";
 
+beforeAll(() => {
+	window.navigation = { navigate: jest.fn() };
+	HTMLFormElement.prototype.requestSubmit = jest.fn();
+});
+
 // Mock the auth and users APIs
 jest.mock("../../services/api/auth");
 jest.mock("../../services/api/users");

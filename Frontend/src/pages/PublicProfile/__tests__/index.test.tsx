@@ -6,12 +6,17 @@ import { usePublicProfile } from "../../../hooks/PageData/usePublicProfile";
 import { useProfile } from "../../../hooks/PageData/useProfile";
 import { useAuth } from "../../../context/AuthContext";
 
+beforeAll(() => {
+	window.navigation = { navigate: jest.fn() };
+	HTMLFormElement.prototype.requestSubmit = jest.fn();
+});
+
 // Mock the hooks
 jest.mock("../../../hooks/PageData/usePublicProfile");
 jest.mock("../../../hooks/PageData/useProfile");
 jest.mock("../../../context/AuthContext");
 
-// Mock React Router hooks  
+// Mock React Router hooks
 const mockNavigate = jest.fn();
 jest.mock("react-router-dom", () => ({
 	...jest.requireActual("react-router-dom"),
@@ -32,14 +37,19 @@ jest.mock("../../../components/profile/MainInformation", () => {
 			<div data-testid="main-information">
 				<div data-testid="username">{user.username}</div>
 				<div data-testid="profile-picture">
-					<img src={user.profile_picture} alt={`${user.username}'s profile`} />
+					<img
+						src={user.profile_picture}
+						alt={`${user.username}'s profile`}
+					/>
 				</div>
 			</div>
 		);
 	};
 });
 
-const mockUsePublicProfile = usePublicProfile as jest.MockedFunction<typeof usePublicProfile>;
+const mockUsePublicProfile = usePublicProfile as jest.MockedFunction<
+	typeof usePublicProfile
+>;
 const mockUseProfile = useProfile as jest.MockedFunction<typeof useProfile>;
 const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
 
@@ -47,7 +57,7 @@ describe("PublicProfile Page", () => {
 	const mockUserData = {
 		username: "testuser",
 		first_name: "Test",
-		last_name: "User", 
+		last_name: "User",
 		age: 25,
 		biography: "Test bio",
 		fame: 100,
@@ -61,7 +71,7 @@ describe("PublicProfile Page", () => {
 	beforeEach(() => {
 		jest.clearAllMocks();
 		mockNavigate.mockClear();
-		
+
 		// Default mocks
 		mockUseAuth.mockReturnValue({
 			user: { id: "different-user-id", username: "current-user" },
@@ -134,7 +144,9 @@ describe("PublicProfile Page", () => {
 
 			renderPublicProfile();
 
-			expect(screen.queryByTestId("main-information")).not.toBeInTheDocument();
+			expect(
+				screen.queryByTestId("main-information")
+			).not.toBeInTheDocument();
 		});
 	});
 
@@ -151,7 +163,9 @@ describe("PublicProfile Page", () => {
 
 			renderPublicProfile();
 
-			expect(screen.getByText(`Error: ${errorMessage}`, { exact: false })).toBeInTheDocument();
+			expect(
+				screen.getByText(`Error: ${errorMessage}`, { exact: false })
+			).toBeInTheDocument();
 		});
 
 		it("should not show spinner when there's an error", () => {
@@ -177,7 +191,9 @@ describe("PublicProfile Page", () => {
 
 			renderPublicProfile();
 
-			expect(screen.queryByTestId("main-information")).not.toBeInTheDocument();
+			expect(
+				screen.queryByTestId("main-information")
+			).not.toBeInTheDocument();
 		});
 	});
 
@@ -218,7 +234,9 @@ describe("PublicProfile Page", () => {
 
 			renderPublicProfile();
 
-			expect(screen.queryByText("Error:", { exact: false })).not.toBeInTheDocument();
+			expect(
+				screen.queryByText("Error:", { exact: false })
+			).not.toBeInTheDocument();
 		});
 
 		it("should pass profile data to MainInformation component", () => {
@@ -231,8 +249,13 @@ describe("PublicProfile Page", () => {
 
 			renderPublicProfile();
 
-			expect(screen.getByTestId("username")).toHaveTextContent("testuser");
-			expect(screen.getByAltText("testuser's profile")).toHaveAttribute("src", "/test-image.jpg");
+			expect(screen.getByTestId("username")).toHaveTextContent(
+				"testuser"
+			);
+			expect(screen.getByAltText("testuser's profile")).toHaveAttribute(
+				"src",
+				"/test-image.jpg"
+			);
 		});
 	});
 

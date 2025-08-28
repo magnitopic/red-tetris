@@ -1,6 +1,11 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import HostScreen from "../HostScreen";
 
+beforeAll(() => {
+	window.navigation = { navigate: jest.fn() };
+	HTMLFormElement.prototype.requestSubmit = jest.fn();
+});
+
 // Mock the RegularButton component
 jest.mock("../../../components/common/RegularButton", () => {
 	return function MockRegularButton({ value, callback, type }: any) {

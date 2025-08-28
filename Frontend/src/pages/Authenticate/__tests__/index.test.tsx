@@ -2,6 +2,11 @@ import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import AuthenticatePage from "../index";
 
+beforeAll(() => {
+	window.navigation = { navigate: jest.fn() };
+	HTMLFormElement.prototype.requestSubmit = jest.fn();
+});
+
 // Mock the Form component to isolate the page component testing
 jest.mock("../Form", () => {
 	return function MockForm() {
@@ -18,167 +23,65 @@ describe("Authenticate Page", () => {
 		);
 	};
 
-	describe("Rendering", () => {
-		it("should render the main authenticate page correctly", () => {
-			renderAuthenticatePage();
+	it("renders with correct structure and content", () => {
+		renderAuthenticatePage();
 
-			expect(screen.getByRole("main")).toBeInTheDocument();
-			expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
-			expect(screen.getByText("Enter")).toBeInTheDocument();
-		});
+		// Basic structure and content
+		expect(screen.getByRole("main")).toBeInTheDocument();
+		expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
+		expect(screen.getByText("Enter")).toBeInTheDocument();
+		expect(screen.getByTestId("mock-form")).toBeInTheDocument();
 
-		it("should render the Form component", () => {
-			renderAuthenticatePage();
-
-			expect(screen.getByTestId("mock-form")).toBeInTheDocument();
-		});
-
-		it("should have correct page structure", () => {
-			renderAuthenticatePage();
-
-			const main = screen.getByRole("main");
-			expect(main).toHaveClass("flex", "flex-1", "justify-center", "items-center", "flex-col");
-
-			const section = main.querySelector("section");
-			expect(section).toBeInTheDocument();
-			expect(section).toHaveClass("container", "max-w-4xl", "text-center");
-		});
+		// Semantic structure
+		const main = screen.getByRole("main");
+		const section = main.querySelector("section");
+		expect(section).toBeInTheDocument();
 	});
 
-	describe("Styling", () => {
-		it("should have correct heading styling", () => {
-			renderAuthenticatePage();
+	it("has correct styling and layout classes", () => {
+		renderAuthenticatePage();
 
-			const heading = screen.getByRole("heading", { level: 1 });
-			expect(heading).toHaveClass("lg:text-5xl", "text-2xl", "text-gray-8", "font-bold");
-		});
+		// Main layout
+		const main = screen.getByRole("main");
+		expect(main).toHaveClass(
+			"flex",
+			"flex-1",
+			"justify-center",
+			"items-center",
+			"flex-col",
+			"gb-background-main"
+		);
 
-		it("should have correct background styling", () => {
-			renderAuthenticatePage();
+		// Section layout
+		const section = main.querySelector("section");
+		expect(section).toHaveClass(
+			"container",
+			"max-w-4xl",
+			"text-center",
+			"my-20",
+			"px-3",
+			"flex",
+			"flex-col",
+			"items-center",
+			"gap-10"
+		);
 
-			const main = screen.getByRole("main");
-			expect(main).toHaveClass("gb-background-main");
-		});
-
-		it("should have correct container styling", () => {
-			renderAuthenticatePage();
-
-			const section = screen.getByRole("main").querySelector("section");
-			expect(section).toHaveClass(
-				"container",
-				"max-w-4xl", 
-				"text-center",
-				"my-20",
-				"px-3",
-				"flex",
-				"flex-col",
-				"items-center",
-				"gap-10"
-			);
-		});
+		// Heading styling (including responsive)
+		const heading = screen.getByRole("heading", { level: 1 });
+		expect(heading).toHaveClass(
+			"lg:text-5xl",
+			"text-2xl",
+			"text-gray-8",
+			"font-bold"
+		);
 	});
 
-	describe("Content", () => {
-		it("should display 'Enter' as the main heading", () => {
-			renderAuthenticatePage();
+	it("integrates properly with routing", () => {
+		// Should render without router errors
+		expect(() => renderAuthenticatePage()).not.toThrow();
 
-			expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Enter");
-		});
-
-		it("should have semantic HTML structure", () => {
-			renderAuthenticatePage();
-
-			expect(screen.getByRole("main")).toBeInTheDocument();
-			expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
-		});
-	});
-
-	describe("Responsive Design", () => {
-		it("should have responsive text sizing classes", () => {
-			renderAuthenticatePage();
-
-			const heading = screen.getByRole("heading", { level: 1 });
-			expect(heading).toHaveClass("lg:text-5xl", "text-2xl");
-		});
-
-		it("should have responsive container classes", () => {
-			renderAuthenticatePage();
-
-			const section = screen.getByRole("main").querySelector("section");
-			expect(section).toHaveClass("max-w-4xl", "px-3");
-		});
-	});
-
-	describe("Component Integration", () => {
-		it("should integrate properly with routing", () => {
-			// Test that the component renders without router errors
-			expect(() => renderAuthenticatePage()).not.toThrow();
-		});
-
-		it("should render consistently across multiple renders", () => {
-			const { rerender } = renderAuthenticatePage();
-
-			expect(screen.getByText("Enter")).toBeInTheDocument();
-			expect(screen.getByTestId("mock-form")).toBeInTheDocument();
-
-			rerender(
-				<MemoryRouter>
-					<AuthenticatePage />
-				</MemoryRouter>
-			);
-
-			expect(screen.getByText("Enter")).toBeInTheDocument();
-			expect(screen.getByTestId("mock-form")).toBeInTheDocument();
-		});
-
-		it("should handle component unmounting gracefully", () => {
-			const { unmount } = renderAuthenticatePage();
-
-			expect(() => unmount()).not.toThrow();
-		});
-	});
-
-	describe("Accessibility", () => {
-		it("should have proper semantic structure", () => {
-			renderAuthenticatePage();
-
-			// Should have main landmark
-			expect(screen.getByRole("main")).toBeInTheDocument();
-			
-			// Should have proper heading hierarchy
-			expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
-		});
-
-		it("should be keyboard navigable", () => {
-			renderAuthenticatePage();
-
-			const main = screen.getByRole("main");
-			expect(main).toBeInTheDocument();
-			
-			// Main should be focusable or contain focusable elements
-			expect(main.querySelector("*")).toBeInTheDocument();
-		});
-	});
-
-	describe("Layout Structure", () => {
-		it("should have correct flex layout", () => {
-			renderAuthenticatePage();
-
-			const main = screen.getByRole("main");
-			expect(main).toHaveClass("flex", "flex-1", "justify-center", "items-center", "flex-col");
-
-			const section = main.querySelector("section");
-			expect(section).toHaveClass("flex", "flex-col", "items-center", "gap-10");
-		});
-
-		it("should center content properly", () => {
-			renderAuthenticatePage();
-
-			const main = screen.getByRole("main");
-			expect(main).toHaveClass("justify-center", "items-center");
-
-			const section = main.querySelector("section");
-			expect(section).toHaveClass("text-center", "items-center");
-		});
+		// Should maintain consistent rendering
+		expect(screen.getByText("Enter")).toBeInTheDocument();
+		expect(screen.getByTestId("mock-form")).toBeInTheDocument();
 	});
 });

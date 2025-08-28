@@ -4,6 +4,11 @@ import "@testing-library/jest-dom";
 import { MemoryRouter } from "react-router-dom";
 import Layout from "../Layout";
 
+beforeAll(() => {
+	window.navigation = { navigate: jest.fn() };
+	HTMLFormElement.prototype.requestSubmit = jest.fn();
+});
+
 // Mock the Header and Footer components
 jest.mock("../Header/Header", () => {
 	return function MockHeader() {

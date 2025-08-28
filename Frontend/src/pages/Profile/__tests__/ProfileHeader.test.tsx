@@ -5,6 +5,11 @@ import ProfileHeader from "../ProfileHeader";
 import { useAuth } from "../../../context/AuthContext";
 import { useEditProfile } from "../../../hooks/PageData/useEditProfile";
 
+beforeAll(() => {
+	window.navigation = { navigate: jest.fn() };
+	HTMLFormElement.prototype.requestSubmit = jest.fn();
+});
+
 // Mock the hooks
 jest.mock("../../../context/AuthContext");
 jest.mock("../../../hooks/PageData/useEditProfile");
@@ -76,9 +81,11 @@ describe("ProfileHeader Component", () => {
 
 			const profileImage = screen.getByAltText("UserProfile");
 			const src = profileImage.getAttribute("src");
-			
+
 			// Check that the base URL is correct and cache parameter exists
-			expect(src).toMatch(/^https:\/\/example\.com\/profile\.jpg\?v=\d+$/);
+			expect(src).toMatch(
+				/^https:\/\/example\.com\/profile\.jpg\?v=\d+$/
+			);
 			expect(src).toContain("https://example.com/profile.jpg?v=");
 		});
 

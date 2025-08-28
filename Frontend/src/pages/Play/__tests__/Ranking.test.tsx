@@ -3,6 +3,11 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import Ranking from "../Ranking";
 
+beforeAll(() => {
+	window.navigation = { navigate: jest.fn() };
+	HTMLFormElement.prototype.requestSubmit = jest.fn();
+});
+
 // Mock the entire hook module with the correct path
 jest.mock("../../../hooks/PageData/useGamePlayers", () => ({
 	useGamePlayers: jest.fn(),

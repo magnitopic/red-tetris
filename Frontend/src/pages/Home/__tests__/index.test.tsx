@@ -2,6 +2,11 @@ import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import Home from "../index";
 
+beforeAll(() => {
+	window.navigation = { navigate: jest.fn() };
+	HTMLFormElement.prototype.requestSubmit = jest.fn();
+});
+
 // Mock the StyledButton component
 jest.mock("../../../components/common/StyledButton", () => {
 	return function MockStyledButton({ value }: { value: string }) {
@@ -23,8 +28,12 @@ describe("Home Page", () => {
 			renderHome();
 
 			expect(screen.getByRole("main")).toBeInTheDocument();
-			expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
-			expect(screen.getByText("Welcome to Red Tetris!")).toBeInTheDocument();
+			expect(
+				screen.getByRole("heading", { level: 1 })
+			).toBeInTheDocument();
+			expect(
+				screen.getByText("Welcome to Red Tetris!")
+			).toBeInTheDocument();
 		});
 
 		it("should render the logo image", () => {
@@ -39,7 +48,9 @@ describe("Home Page", () => {
 		it("should render the description text", () => {
 			renderHome();
 
-			expect(screen.getByText("Online multiplayer Tetris game.")).toBeInTheDocument();
+			expect(
+				screen.getByText("Online multiplayer Tetris game.")
+			).toBeInTheDocument();
 		});
 
 		it("should render the start playing button", () => {
@@ -64,7 +75,13 @@ describe("Home Page", () => {
 			renderHome();
 
 			const main = screen.getByRole("main");
-			expect(main).toHaveClass("flex", "flex-1", "justify-center", "items-center", "flex-col");
+			expect(main).toHaveClass(
+				"flex",
+				"flex-1",
+				"justify-center",
+				"items-center",
+				"flex-col"
+			);
 		});
 
 		it("should have correct section container styling", () => {
@@ -72,8 +89,14 @@ describe("Home Page", () => {
 
 			const main = screen.getByRole("main");
 			const section = main.querySelector("section");
-			
-			expect(section).toHaveClass("container", "max-w-4xl", "text-center", "my-20", "px-3");
+
+			expect(section).toHaveClass(
+				"container",
+				"max-w-4xl",
+				"text-center",
+				"my-20",
+				"px-3"
+			);
 		});
 
 		it("should have correct inner content container styling", () => {
@@ -81,8 +104,14 @@ describe("Home Page", () => {
 
 			const main = screen.getByRole("main");
 			const contentDiv = main.querySelector("section > div");
-			
-			expect(contentDiv).toHaveClass("flex", "justify-center", "items-center", "flex-col", "gap-10");
+
+			expect(contentDiv).toHaveClass(
+				"flex",
+				"justify-center",
+				"items-center",
+				"flex-col",
+				"gap-10"
+			);
 		});
 	});
 
@@ -91,13 +120,19 @@ describe("Home Page", () => {
 			renderHome();
 
 			const heading = screen.getByRole("heading", { level: 1 });
-			expect(heading).toHaveClass("lg:text-5xl", "text-2xl", "text-gray-8");
+			expect(heading).toHaveClass(
+				"lg:text-5xl",
+				"text-2xl",
+				"text-gray-8"
+			);
 		});
 
 		it("should have correct description text styling", () => {
 			renderHome();
 
-			const description = screen.getByText("Online multiplayer Tetris game.");
+			const description = screen.getByText(
+				"Online multiplayer Tetris game."
+			);
 			expect(description).toHaveClass("text-gray-5", "text-lg");
 		});
 	});
@@ -108,7 +143,7 @@ describe("Home Page", () => {
 
 			const link = screen.getByRole("link");
 			const button = screen.getByTestId("styled-button");
-			
+
 			expect(link).toContainElement(button);
 			expect(link.getAttribute("href")).toBe("/play");
 		});
@@ -119,7 +154,9 @@ describe("Home Page", () => {
 			renderHome();
 
 			expect(screen.getByRole("main")).toBeInTheDocument();
-			expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
+			expect(
+				screen.getByRole("heading", { level: 1 })
+			).toBeInTheDocument();
 			expect(screen.getByRole("link")).toBeInTheDocument();
 		});
 
@@ -152,7 +189,7 @@ describe("Home Page", () => {
 
 			const main = screen.getByRole("main");
 			const section = main.querySelector("section");
-			
+
 			expect(section).toHaveClass("max-w-4xl", "px-3");
 		});
 	});
@@ -165,7 +202,9 @@ describe("Home Page", () => {
 		it("should render consistently across multiple renders", () => {
 			const { rerender } = renderHome();
 
-			expect(screen.getByText("Welcome to Red Tetris!")).toBeInTheDocument();
+			expect(
+				screen.getByText("Welcome to Red Tetris!")
+			).toBeInTheDocument();
 
 			rerender(
 				<MemoryRouter>
@@ -173,7 +212,9 @@ describe("Home Page", () => {
 				</MemoryRouter>
 			);
 
-			expect(screen.getByText("Welcome to Red Tetris!")).toBeInTheDocument();
+			expect(
+				screen.getByText("Welcome to Red Tetris!")
+			).toBeInTheDocument();
 		});
 
 		it("should handle component unmounting gracefully", () => {
@@ -198,19 +239,25 @@ describe("Home Page", () => {
 		it("should display welcome message", () => {
 			renderHome();
 
-			expect(screen.getByText("Welcome to Red Tetris!")).toBeInTheDocument();
+			expect(
+				screen.getByText("Welcome to Red Tetris!")
+			).toBeInTheDocument();
 		});
 
 		it("should display game description", () => {
 			renderHome();
 
-			expect(screen.getByText("Online multiplayer Tetris game.")).toBeInTheDocument();
+			expect(
+				screen.getByText("Online multiplayer Tetris game.")
+			).toBeInTheDocument();
 		});
 
 		it("should display call-to-action button text", () => {
 			renderHome();
 
-			expect(screen.getByTestId("styled-button")).toHaveTextContent("Start playing");
+			expect(screen.getByTestId("styled-button")).toHaveTextContent(
+				"Start playing"
+			);
 		});
 	});
 
@@ -225,7 +272,9 @@ describe("Home Page", () => {
 			// Check order: logo, heading, description, link
 			expect(children[0]).toContainElement(screen.getByAltText(""));
 			expect(children[1]).toContainElement(screen.getByRole("heading"));
-			expect(children[2]).toHaveTextContent("Online multiplayer Tetris game.");
+			expect(children[2]).toHaveTextContent(
+				"Online multiplayer Tetris game."
+			);
 			expect(children[3]).toContainElement(screen.getByRole("link"));
 		});
 	});

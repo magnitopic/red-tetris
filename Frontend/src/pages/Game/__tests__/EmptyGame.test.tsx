@@ -3,6 +3,11 @@ import { MemoryRouter } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import EmptyGame from "../EmptyGame";
 
+beforeAll(() => {
+	window.navigation = { navigate: jest.fn() };
+	HTMLFormElement.prototype.requestSubmit = jest.fn();
+});
+
 // Mock react-router-dom
 jest.mock("react-router-dom", () => ({
 	...jest.requireActual("react-router-dom"),
@@ -91,9 +96,11 @@ describe("EmptyGame Component", () => {
 			renderEmptyGame();
 
 			const [path, options] = mockNavigateFn.mock.calls[0];
-			
+
 			expect(path).toBe("/play");
-			expect(options.state.error).toBe("Room code is required to join a game.");
+			expect(options.state.error).toBe(
+				"Room code is required to join a game."
+			);
 		});
 
 		it("should maintain consistent error message format", () => {
@@ -148,7 +155,7 @@ describe("EmptyGame Component", () => {
 
 			// Component should unmount cleanly
 			expect(() => unmount()).not.toThrow();
-			
+
 			// Navigate should have been called during mount
 			expect(mockNavigateFn).toHaveBeenCalled();
 		});

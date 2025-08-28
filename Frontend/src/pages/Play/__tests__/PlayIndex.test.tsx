@@ -3,6 +3,11 @@ import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import PlayIndex from "../index";
 
+beforeAll(() => {
+	window.navigation = { navigate: jest.fn() };
+	HTMLFormElement.prototype.requestSubmit = jest.fn();
+});
+
 describe("PlayIndex", () => {
 	it("renders main layout structure", () => {
 		render(

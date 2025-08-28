@@ -4,6 +4,11 @@ import "@testing-library/jest-dom";
 import { MemoryRouter } from "react-router-dom";
 import Header from "../Header";
 
+beforeAll(() => {
+	window.navigation = { navigate: jest.fn() };
+	HTMLFormElement.prototype.requestSubmit = jest.fn();
+});
+
 // Mock the dependencies
 jest.mock("../../../../hooks/useBreakpoints", () => ({
 	useBreakpoints: jest.fn(),

@@ -2,6 +2,11 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import Profile from "../index";
 
+beforeAll(() => {
+	window.navigation = { navigate: jest.fn() };
+	HTMLFormElement.prototype.requestSubmit = jest.fn();
+});
+
 // Mock the hooks
 const mockUseAuth = jest.fn();
 const mockUseProfile = jest.fn();
@@ -47,7 +52,10 @@ jest.mock("../../../components/common/Spinner", () => {
 jest.mock("../ProfileHeader", () => {
 	return function MockProfileHeader({ user }: { user: any }) {
 		return (
-			<section className="container max-w-4xl text-center my-20 px-3" data-testid="profile-header">
+			<section
+				className="container max-w-4xl text-center my-20 px-3"
+				data-testid="profile-header"
+			>
 				<div className="flex flex-col items-center gap-3">
 					<div className="relative w-fit">
 						<img
@@ -57,7 +65,9 @@ jest.mock("../ProfileHeader", () => {
 						/>
 					</div>
 					<div className="flex flex-col gap-1">
-						<p className="text-2xl font-semibold">{user?.username}</p>
+						<p className="text-2xl font-semibold">
+							{user?.username}
+						</p>
 					</div>
 				</div>
 			</section>
@@ -120,7 +130,9 @@ describe("Profile Page", () => {
 
 			renderProfile();
 
-			expect(screen.queryByTestId("profile-header")).not.toBeInTheDocument();
+			expect(
+				screen.queryByTestId("profile-header")
+			).not.toBeInTheDocument();
 		});
 	});
 
@@ -135,7 +147,9 @@ describe("Profile Page", () => {
 
 			renderProfile();
 
-			expect(screen.getByText(`Error: ${errorMessage}`, { exact: false })).toBeInTheDocument();
+			expect(
+				screen.getByText(`Error: ${errorMessage}`, { exact: false })
+			).toBeInTheDocument();
 		});
 
 		it("should not show spinner when there's an error", () => {
@@ -159,7 +173,9 @@ describe("Profile Page", () => {
 
 			renderProfile();
 
-			expect(screen.queryByTestId("profile-header")).not.toBeInTheDocument();
+			expect(
+				screen.queryByTestId("profile-header")
+			).not.toBeInTheDocument();
 		});
 	});
 

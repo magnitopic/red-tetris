@@ -5,6 +5,11 @@ import GameScreen from "../GameScreen";
 import { useBreakpoints } from "../../../hooks/useBreakpoints";
 import { usersApi } from "../../../services/api/users";
 
+beforeAll(() => {
+	window.navigation = { navigate: jest.fn() };
+	HTMLFormElement.prototype.requestSubmit = jest.fn();
+});
+
 // Mock dependencies
 jest.mock("../../../hooks/useBreakpoints");
 jest.mock("../../../services/api/users");

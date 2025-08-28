@@ -3,6 +3,11 @@ import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import MainInformation from "../MainInformation";
 
+beforeAll(() => {
+	window.navigation = { navigate: jest.fn() };
+	HTMLFormElement.prototype.requestSubmit = jest.fn();
+});
+
 // Mock the capitalizeLetters utility
 jest.mock("../../../utils/capitalizeLetters", () => {
 	return jest.fn((str: string) => str);

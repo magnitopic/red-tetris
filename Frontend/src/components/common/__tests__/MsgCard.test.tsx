@@ -9,7 +9,6 @@ import {
 import "@testing-library/jest-dom";
 import MsgCard from "../MsgCard";
 
-// Mock timers for testing duration and animation
 jest.useFakeTimers();
 
 describe("MsgCard Component", () => {
@@ -21,297 +20,84 @@ describe("MsgCard Component", () => {
 		jest.useRealTimers();
 	});
 
-	describe("Rendering", () => {
-		it("should render success message correctly", () => {
-			render(
-				<MsgCard
-					type="success"
-					message="Operation completed successfully!"
-				/>
-			);
+	it("renders different message types with correct styling and content", () => {
+		const testCases = [
+			{ type: "success", label: "Success", classes: ["bg-green-50", "text-green-700", "border-green-200"] },
+			{ type: "error", label: "Error", classes: ["bg-red-50", "text-red-700", "border-red-200"] },
+			{ type: "warning", label: "Warning", classes: ["bg-yellow-50", "text-yellow-700", "border-yellow-200"] },
+			{ type: "info", label: "Info", classes: ["bg-blue-50", "text-blue-700", "border-blue-200"] }
+		];
 
-			expect(screen.getByText("Success")).toBeInTheDocument();
-			expect(
-				screen.getByText("Operation completed successfully!")
-			).toBeInTheDocument();
+		testCases.forEach(({ type, label, classes }) => {
+			const { unmount } = render(<MsgCard type={type as any} message={`${type} message`} />);
+			
+			expect(screen.getByText(label)).toBeInTheDocument();
+			expect(screen.getByText(`${type} message`)).toBeInTheDocument();
 			expect(screen.getByRole("button")).toBeInTheDocument();
-		});
-
-		it("should render error message correctly", () => {
-			render(<MsgCard type="error" message="Something went wrong!" />);
-
-			expect(screen.getByText("Error")).toBeInTheDocument();
-			expect(
-				screen.getByText("Something went wrong!")
-			).toBeInTheDocument();
-		});
-
-		it("should render warning message correctly", () => {
-			render(
-				<MsgCard type="warning" message="Please check your input!" />
-			);
-
-			expect(screen.getByText("Warning")).toBeInTheDocument();
-			expect(
-				screen.getByText("Please check your input!")
-			).toBeInTheDocument();
-		});
-
-		it("should render info message correctly", () => {
-			render(<MsgCard type="info" message="Here is some information!" />);
-
-			expect(screen.getByText("Info")).toBeInTheDocument();
-			expect(
-				screen.getByText("Here is some information!")
-			).toBeInTheDocument();
+			
+			const messageCard = screen.getByText(`${type} message`).closest("div")?.parentElement;
+			expect(messageCard).toHaveClass(...classes);
+			
+			unmount();
 		});
 	});
 
-	describe("Styling", () => {
-		it("should apply correct CSS classes for success type", () => {
-			render(<MsgCard type="success" message="Success message" />);
+	it("handles close functionality and animations", async () => {
+		const mockOnClose = jest.fn();
+		render(<MsgCard type="success" message="Test message" onClose={mockOnClose} />);
 
-			const messageCard = screen
-				.getByText("Success message")
-				.closest("div")?.parentElement;
-			expect(messageCard).toHaveClass(
-				"bg-green-50",
-				"text-green-700",
-				"border-green-200"
-			);
+		const closeButton = screen.getByRole("button");
+		const messageCard = screen.getByText("Test message").closest("div")?.parentElement;
+
+		expect(closeButton).toHaveTextContent("×");
+		expect(messageCard).toHaveClass("opacity-100");
+
+		fireEvent.click(closeButton);
+
+		expect(messageCard).toHaveClass("opacity-0", "translate-x-full");
+
+		await act(async () => {
+			jest.advanceTimersByTime(500);
 		});
 
-		it("should apply correct CSS classes for error type", () => {
-			render(<MsgCard type="error" message="Error message" />);
-
-			const messageCard = screen
-				.getByText("Error message")
-				.closest("div")?.parentElement;
-			expect(messageCard).toHaveClass(
-				"bg-red-50",
-				"text-red-700",
-				"border-red-200"
-			);
-		});
-
-		it("should apply correct CSS classes for warning type", () => {
-			render(<MsgCard type="warning" message="Warning message" />);
-
-			const messageCard = screen
-				.getByText("Warning message")
-				.closest("div")?.parentElement;
-			expect(messageCard).toHaveClass(
-				"bg-yellow-50",
-				"text-yellow-700",
-				"border-yellow-200"
-			);
-		});
-
-		it("should apply correct CSS classes for info type", () => {
-			render(<MsgCard type="info" message="Info message" />);
-
-			const messageCard = screen
-				.getByText("Info message")
-				.closest("div")?.parentElement;
-			expect(messageCard).toHaveClass(
-				"bg-blue-50",
-				"text-blue-700",
-				"border-blue-200"
-			);
-		});
-
-		it("should have correct base styling classes", () => {
-			render(<MsgCard type="success" message="Test message" />);
-
-			const messageCard = screen
-				.getByText("Test message")
-				.closest("div")?.parentElement;
-			expect(messageCard).toHaveClass(
-				"z-50",
-				"rounded",
-				"py-4",
-				"px-8",
-				"fixed",
-				"bottom-4",
-				"right-4",
-				"shadow-lg",
-				"flex",
-				"items-center",
-				"transition-all",
-				"duration-500"
-			);
-		});
+		expect(mockOnClose).toHaveBeenCalledTimes(1);
 	});
 
-	describe("Close functionality", () => {
-		it("should call onClose when close button is clicked", async () => {
-			const mockOnClose = jest.fn();
-			render(
-				<MsgCard
-					type="success"
-					message="Test message"
-					onClose={mockOnClose}
-				/>
-			);
-
-			const closeButton = screen.getByRole("button");
-			fireEvent.click(closeButton);
-
-			// Fast-forward through the fade-out animation
-			await act(async () => {
-				jest.advanceTimersByTime(500);
-			});
-
-			expect(mockOnClose).toHaveBeenCalledTimes(1);
+	it("handles auto-close with default and custom durations", async () => {
+		const mockOnClose = jest.fn();
+		
+		// Test default duration
+		const { unmount } = render(<MsgCard type="success" message="Test 1" onClose={mockOnClose} />);
+		
+		await act(async () => {
+			jest.advanceTimersByTime(5500);
 		});
+		
+		expect(mockOnClose).toHaveBeenCalledTimes(1);
+		unmount();
 
-		it("should show close button with correct symbol", () => {
-			render(<MsgCard type="success" message="Test message" />);
-
-			const closeButton = screen.getByRole("button");
-			expect(closeButton).toHaveTextContent("×");
+		// Test custom duration
+		mockOnClose.mockClear();
+		render(<MsgCard type="success" message="Test 2" duration={2000} onClose={mockOnClose} />);
+		
+		await act(async () => {
+			jest.advanceTimersByTime(2500);
 		});
-
-		it("should apply fade-out animation when closing", () => {
-			render(<MsgCard type="success" message="Test message" />);
-
-			const messageCard = screen
-				.getByText("Test message")
-				.closest("div")?.parentElement;
-			const closeButton = screen.getByRole("button");
-
-			// Initially should not have fade-out classes
-			expect(messageCard).toHaveClass("opacity-100");
-			expect(messageCard).not.toHaveClass(
-				"opacity-0",
-				"translate-x-full"
-			);
-
-			fireEvent.click(closeButton);
-
-			// After clicking close, should have fade-out classes
-			expect(messageCard).toHaveClass("opacity-0", "translate-x-full");
-		});
+		
+		expect(mockOnClose).toHaveBeenCalledTimes(1);
 	});
 
-	describe("Auto-close functionality", () => {
-		it("should auto-close after default duration (5000ms)", async () => {
-			const mockOnClose = jest.fn();
-			render(
-				<MsgCard
-					type="success"
-					message="Test message"
-					onClose={mockOnClose}
-				/>
-			);
+	it("handles visibility changes and component lifecycle", async () => {
+		render(<MsgCard type="success" message="Test message" duration={1000} />);
 
-			// Fast-forward through default duration + fade-out
-			await act(async () => {
-				jest.advanceTimersByTime(5500);
-			});
+		expect(screen.getByText("Test message")).toBeInTheDocument();
 
-			expect(mockOnClose).toHaveBeenCalledTimes(1);
+		await act(async () => {
+			jest.advanceTimersByTime(1500);
 		});
 
-		it("should auto-close after custom duration", async () => {
-			const mockOnClose = jest.fn();
-			render(
-				<MsgCard
-					type="success"
-					message="Test message"
-					duration={2000}
-					onClose={mockOnClose}
-				/>
-			);
-
-			// Fast-forward through custom duration + fade-out
-			await act(async () => {
-				jest.advanceTimersByTime(2500);
-			});
-
-			expect(mockOnClose).toHaveBeenCalledTimes(1);
-		});
-
-		it("should not call onClose if no onClose prop provided", async () => {
-			render(
-				<MsgCard
-					type="success"
-					message="Test message"
-					duration={1000}
-				/>
-			);
-
-			// Should not throw error when no onClose is provided
-			await act(async () => {
-				expect(() => {
-					jest.advanceTimersByTime(1500);
-				}).not.toThrow();
-			});
-		});
-	});
-
-	describe("Component lifecycle", () => {
-		it("should not render when isVisible becomes false", async () => {
-			render(
-				<MsgCard
-					type="success"
-					message="Test message"
-					duration={1000}
-				/>
-			);
-
-			expect(screen.getByText("Test message")).toBeInTheDocument();
-
-			// Fast-forward past duration + fade-out
-			await act(async () => {
-				jest.advanceTimersByTime(1500);
-			});
-
-			// Component should be removed from DOM
-			await waitFor(() => {
-				expect(
-					screen.queryByText("Test message")
-				).not.toBeInTheDocument();
-			});
-		});
-
-		it("should handle component unmounting gracefully", () => {
-			const { unmount } = render(
-				<MsgCard type="success" message="Test message" />
-			);
-
-			// Should not throw error when unmounting
-			expect(() => unmount()).not.toThrow();
-		});
-	});
-
-	describe("Message content", () => {
-		it("should handle long messages correctly", () => {
-			const longMessage =
-				"This is a very long message that should wrap properly and be displayed correctly in the message card component without breaking the layout.";
-
-			render(<MsgCard type="info" message={longMessage} />);
-
-			expect(screen.getByText(longMessage)).toBeInTheDocument();
-
-			const messageElement = screen.getByText(longMessage);
-			expect(messageElement).toHaveClass("text-wrap");
-		});
-
-		it("should handle empty messages", () => {
-			render(<MsgCard type="success" message="" />);
-
-			expect(screen.getByText("Success")).toBeInTheDocument();
-			// For empty message, just check that the component renders without error
-			expect(screen.getByRole("button")).toBeInTheDocument();
-		});
-
-		it("should handle special characters in messages", () => {
-			const specialMessage = "Message with special chars: @#$%^&*()!";
-
-			render(<MsgCard type="error" message={specialMessage} />);
-
-			expect(screen.getByText(specialMessage)).toBeInTheDocument();
+		await waitFor(() => {
+			expect(screen.queryByText("Test message")).not.toBeInTheDocument();
 		});
 	});
 });

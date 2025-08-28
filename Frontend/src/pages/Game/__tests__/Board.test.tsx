@@ -2,6 +2,11 @@ import React from "react";
 import { render, screen } from "@testing-library/react";
 import Board from "../Board";
 
+beforeAll(() => {
+	window.navigation = { navigate: jest.fn() };
+	HTMLFormElement.prototype.requestSubmit = jest.fn();
+});
+
 describe("Board Component", () => {
 	const mockState = [
 		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],

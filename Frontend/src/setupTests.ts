@@ -41,10 +41,20 @@ Object.defineProperty(window, "scrollTo", {
 	value: jest.fn(),
 });
 
+// Mock navigation API (not implemented in jsdom)
+Object.defineProperty(window, "navigation", {
+	value: {
+		navigate: jest.fn(),
+		addEventListener: jest.fn(),
+		removeEventListener: jest.fn(),
+	},
+	writable: true,
+});
+
 // Mock HTMLFormElement.prototype.requestSubmit (not implemented in jsdom)
 Object.defineProperty(HTMLFormElement.prototype, "requestSubmit", {
 	writable: true,
-	value: jest.fn(function (HTMLFormElement, submitter?: HTMLElement) {
+	value: jest.fn(function (this: HTMLFormElement, submitter?: HTMLElement) {
 		// Simulate the native requestSubmit behavior
 		const submitEvent = new Event("submit", {
 			bubbles: true,
@@ -56,7 +66,7 @@ Object.defineProperty(HTMLFormElement.prototype, "requestSubmit", {
 				writable: false,
 			});
 		}
-		HTMLFormElement.dispatchEvent(submitEvent);
+		this.dispatchEvent(submitEvent);
 	}),
 });
 
@@ -72,16 +82,22 @@ jest.mock("./services/api/config", () => ({
 // These warnings don't affect test functionality but can be noisy
 const originalError = console.error;
 console.error = (...args: any[]) => {
+	const message = typeof args[0] === "string" ? args[0] : 
+		(args[0] && typeof args[0] === "object" && args[0].message) ? args[0].message : "";
+
 	if (
-		typeof args[0] === "string" &&
-		(args[0].includes(
+		message.includes(
 			"Warning: An update to TestComponent inside a test was not wrapped in act"
 		) ||
-			args[0].includes(
-				"When testing, code that causes React state updates should be wrapped into act"
-			) ||
-			args[0].includes("Error: Uncaught [ReferenceError]") ||
-			args[0].includes("Error: Not implemented: navigation"))
+		message.includes(
+			"When testing, code that causes React state updates should be wrapped into act"
+		) ||
+		message.includes("Error: Uncaught [ReferenceError]") ||
+		message.includes("Error: Not implemented: navigation") ||
+		message.includes("Not implemented: navigation") ||
+		message.includes(
+			"Error: Not implemented: HTMLFormElement.prototype.requestSubmit"
+		)
 	) {
 		return;
 	}
