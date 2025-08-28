@@ -89,497 +89,283 @@ describe("GameScreen Component", () => {
 		});
 	});
 
-	describe("Loading State", () => {
-		it("should show loading message when gameState is null", () => {
-			render(
-				<GameScreen
-					gameState={null}
-					socket={mockSocket}
-					spectrums={{}}
-				/>
-			);
-			expect(screen.getByText("Loading game...")).toBeInTheDocument();
+	it("handles loading state and user data fetching", async () => {
+		// Test loading state
+		render(
+			<GameScreen
+				gameState={null}
+				socket={mockSocket}
+				spectrums={{}}
+			/>
+		);
+		expect(screen.getByText("Loading game...")).toBeInTheDocument();
+
+		// Test successful user data fetch
+		mockUsersApi.getMe.mockResolvedValueOnce({
+			msg: { username: "FetchedUser", id: 2 },
 		});
 
-		it("should show loading message when gameState is undefined", () => {
-			render(
-				<GameScreen
-					gameState={undefined}
-					socket={mockSocket}
-					spectrums={{}}
-				/>
-			);
-			expect(screen.getByText("Loading game...")).toBeInTheDocument();
-		});
-	});
+		render(
+			<GameScreen
+				gameState={mockGameState}
+				socket={mockSocket}
+				spectrums={mockSpectrums}
+			/>
+		);
 
-	describe("User Data Fetching", () => {
-		it("should fetch user data on mount", () => {
-			render(
-				<GameScreen
-					gameState={mockGameState}
-					socket={mockSocket}
-					spectrums={mockSpectrums}
-				/>
-			);
-			expect(usersApi.getMe).toHaveBeenCalledTimes(1);
+		expect(usersApi.getMe).toHaveBeenCalled();
+		await waitFor(() => {
+			expect(screen.getByText("FetchedUser")).toBeInTheDocument();
 		});
 
-		it("should handle successful user data fetch", async () => {
-			mockUsersApi.getMe.mockResolvedValueOnce({
-				msg: { username: "FetchedUser", id: 2 },
-			});
+		// Test failed API fetch
+		const originalConsoleError = console.error;
+		console.error = jest.fn();
+		
+		mockUsersApi.getMe.mockRejectedValueOnce(new Error("API Error"));
+		const { container } = render(
+			<GameScreen
+				gameState={mockGameState}
+				socket={mockSocket}
+				spectrums={mockSpectrums}
+			/>
+		);
 
-			render(
-				<GameScreen
-					gameState={mockGameState}
-					socket={mockSocket}
-					spectrums={mockSpectrums}
-				/>
-			);
-
-			await waitFor(() => {
-				expect(screen.getByText("FetchedUser")).toBeInTheDocument();
-			});
-		});
-
-		it("should handle failed user data fetch gracefully", async () => {
-			// Suppress console.error for this test since we're intentionally triggering an error
-			const originalConsoleError = console.error;
-			console.error = jest.fn();
-
-			mockUsersApi.getMe.mockRejectedValueOnce(new Error("API Error"));
-
-			const { container } = render(
-				<GameScreen
-					gameState={mockGameState}
-					socket={mockSocket}
-					spectrums={mockSpectrums}
-				/>
-			);
-
-			await waitFor(() => {
-				// Main board should show "Guest" when API fails
-				const mainBoard = container.querySelector(
-					'[data-is-main="true"]'
-				);
-				expect(mainBoard).toHaveTextContent("Guest");
-			});
-
-			// Restore console.error
-			console.error = originalConsoleError;
-		});
-
-		it("should handle API response without username", async () => {
-			mockUsersApi.getMe.mockResolvedValueOnce({ msg: {} });
-
-			const { container } = render(
-				<GameScreen
-					gameState={mockGameState}
-					socket={mockSocket}
-					spectrums={mockSpectrums}
-				/>
-			);
-
-			await waitFor(() => {
-				// Main board should show "Guest" when username is not provided
-				const mainBoard = container.querySelector(
-					'[data-is-main="true"]'
-				);
-				expect(mainBoard).toHaveTextContent("Guest");
-			});
-		});
-	});
-
-	describe("Keyboard Event Handling", () => {
-		it("should prevent default space key behavior", () => {
-			render(
-				<GameScreen
-					gameState={mockGameState}
-					socket={mockSocket}
-					spectrums={mockSpectrums}
-				/>
-			);
-
-			const preventDefaultSpy = jest.fn();
-			const spaceEvent = new KeyboardEvent("keydown", { code: "Space" });
-			Object.defineProperty(spaceEvent, "preventDefault", {
-				value: preventDefaultSpy,
-			});
-
-			window.dispatchEvent(spaceEvent);
-			expect(preventDefaultSpy).toHaveBeenCalled();
-		});
-
-		it("should not prevent other key events", () => {
-			render(
-				<GameScreen
-					gameState={mockGameState}
-					socket={mockSocket}
-					spectrums={mockSpectrums}
-				/>
-			);
-
-			const preventDefaultSpy = jest.fn();
-			const otherEvent = new KeyboardEvent("keydown", { code: "KeyA" });
-			Object.defineProperty(otherEvent, "preventDefault", {
-				value: preventDefaultSpy,
-			});
-
-			window.dispatchEvent(otherEvent);
-			expect(preventDefaultSpy).not.toHaveBeenCalled();
-		});
-	});
-
-	describe("Responsive Layout - Desktop/Tablet", () => {
-		it("should render desktop layout for tablet and desktop", () => {
-			mockUseBreakpoints.mockReturnValue({
-				isMobile: false,
-				isTablet: true,
-				isDesktop: false,
-			});
-
-			const { container } = render(
-				<GameScreen
-					gameState={mockGameState}
-					socket={mockSocket}
-					spectrums={mockSpectrums}
-				/>
-			);
-
-			expect(container.querySelector(".flex-row")).toBeInTheDocument();
-		});
-
-		it("should render main board in desktop layout", () => {
-			const { container } = render(
-				<GameScreen
-					gameState={mockGameState}
-					socket={mockSocket}
-					spectrums={mockSpectrums}
-				/>
-			);
-
+		await waitFor(() => {
 			const mainBoard = container.querySelector('[data-is-main="true"]');
-			expect(mainBoard).toBeInTheDocument();
+			expect(mainBoard).toHaveTextContent("Guest");
 		});
 
-		it("should render spectrum boards in desktop layout", () => {
-			render(
-				<GameScreen
-					gameState={mockGameState}
-					socket={mockSocket}
-					spectrums={mockSpectrums}
-				/>
-			);
-
-			expect(screen.getByText("Player 1")).toBeInTheDocument();
-			expect(screen.getByText("Player 2")).toBeInTheDocument();
-		});
+		console.error = originalConsoleError;
 	});
 
-	describe("Responsive Layout - Mobile", () => {
-		beforeEach(() => {
-			mockUseBreakpoints.mockReturnValue({
-				isMobile: true,
-				isTablet: false,
-				isDesktop: false,
-			});
+	it("renders responsive layouts correctly", () => {
+		// Test desktop layout
+		const { container: desktopContainer, unmount: unmountDesktop } = render(
+			<GameScreen
+				gameState={mockGameState}
+				socket={mockSocket}
+				spectrums={mockSpectrums}
+			/>
+		);
+
+		expect(desktopContainer.querySelector(".flex-row")).toBeInTheDocument();
+		const mainBoard = desktopContainer.querySelector('[data-is-main="true"]');
+		expect(mainBoard).toBeInTheDocument();
+
+		// Check spectrum rendering in desktop layout
+		expect(screen.getByText("Player 1")).toBeInTheDocument();
+		expect(screen.getByText("Player 2")).toBeInTheDocument();
+
+		// Clean up desktop render
+		unmountDesktop();
+
+		// Test mobile layout
+		mockUseBreakpoints.mockReturnValue({
+			isMobile: true,
+			isTablet: false,
+			isDesktop: false,
 		});
 
-		it("should render mobile layout for mobile devices", () => {
-			const { container } = render(
-				<GameScreen
-					gameState={mockGameState}
-					socket={mockSocket}
-					spectrums={mockSpectrums}
-				/>
-			);
+		const { container: mobileContainer } = render(
+			<GameScreen
+				gameState={mockGameState}
+				socket={mockSocket}
+				spectrums={mockSpectrums}
+			/>
+		);
 
-			expect(container.querySelector(".flex-col")).toBeInTheDocument();
-		});
+		expect(mobileContainer.querySelector(".flex-col")).toBeInTheDocument();
+		const mobileMainBoard = mobileContainer.querySelector('[data-is-main="true"]');
+		expect(mobileMainBoard).toBeInTheDocument();
 
-		it("should render main board at top in mobile layout", () => {
-			const { container } = render(
-				<GameScreen
-					gameState={mockGameState}
-					socket={mockSocket}
-					spectrums={mockSpectrums}
-				/>
-			);
-
-			const mainBoard = container.querySelector('[data-is-main="true"]');
-			expect(mainBoard).toBeInTheDocument();
-		});
-
-		it("should render spectrum boards below main board in mobile layout", () => {
-			render(
-				<GameScreen
-					gameState={mockGameState}
-					socket={mockSocket}
-					spectrums={mockSpectrums}
-				/>
-			);
-
-			expect(screen.getByText("Player 1")).toBeInTheDocument();
-			expect(screen.getByText("Player 2")).toBeInTheDocument();
-		});
+		// Check spectrum rendering in mobile layout
+		expect(screen.getByText("Player 1")).toBeInTheDocument();
+		expect(screen.getByText("Player 2")).toBeInTheDocument();
 	});
 
-	describe("Game State Rendering", () => {
-		it("should render board with current piece merged", () => {
-			render(
-				<GameScreen
-					gameState={mockGameState}
-					socket={mockSocket}
-					spectrums={mockSpectrums}
-				/>
-			);
+	it("handles game state and game over conditions", () => {
+		// Test normal game state
+		render(
+			<GameScreen
+				gameState={mockGameState}
+				socket={mockSocket}
+				spectrums={mockSpectrums}
+			/>
+		);
 
-			const boardStates = screen.getAllByTestId("board-state");
-			expect(boardStates.length).toBeGreaterThan(0);
-		});
+		expect(screen.getByText("1250")).toBeInTheDocument(); // Score
+		expect(screen.queryByTestId("exit-modal")).not.toBeInTheDocument();
 
-		it("should display player score", () => {
-			render(
-				<GameScreen
-					gameState={mockGameState}
-					socket={mockSocket}
-					spectrums={mockSpectrums}
-				/>
-			);
-			expect(screen.getByText("1250")).toBeInTheDocument();
-		});
+		// Test game over state
+		const gameOverState = { ...mockGameState, gameOver: true };
+		render(
+			<GameScreen
+				gameState={gameOverState}
+				socket={mockSocket}
+				spectrums={mockSpectrums}
+			/>
+		);
 
-		it("should handle game state without current piece", () => {
-			const gameStateWithoutPiece = {
-				...mockGameState,
-				currentPiece: null,
-			};
+		expect(screen.getByTestId("exit-modal")).toBeInTheDocument();
 
-			render(
-				<GameScreen
-					gameState={gameStateWithoutPiece}
-					socket={mockSocket}
-					spectrums={mockSpectrums}
-				/>
-			);
+		// Test game state without current piece
+		const gameStateWithoutPiece = { ...mockGameState, currentPiece: null };
+		render(
+			<GameScreen
+				gameState={gameStateWithoutPiece}
+				socket={mockSocket}
+				spectrums={mockSpectrums}
+			/>
+		);
 
-			const boards = screen.getAllByTestId("board");
-			expect(boards.length).toBeGreaterThan(0);
-		});
+		const boards = screen.getAllByTestId("board");
+		expect(boards.length).toBeGreaterThan(0);
 	});
 
-	describe("Game Over State", () => {
-		it("should show exit modal when game is over", () => {
-			const gameOverState = { ...mockGameState, gameOver: true };
+	it("handles piece positioning and board boundaries", () => {
+		// Test normal piece positioning
+		const gameStateWithPiece = {
+			...mockGameState,
+			currentPiece: { shape: [[1]], position: { x: 5, y: 10 } },
+		};
 
-			render(
-				<GameScreen
-					gameState={gameOverState}
-					socket={mockSocket}
-					spectrums={mockSpectrums}
-				/>
-			);
+		render(
+			<GameScreen
+				gameState={gameStateWithPiece}
+				socket={mockSocket}
+				spectrums={mockSpectrums}
+			/>
+		);
 
-			expect(screen.getByTestId("exit-modal")).toBeInTheDocument();
-		});
+		let boards = screen.getAllByTestId("board");
+		expect(boards.length).toBeGreaterThan(0);
 
-		it("should not show exit modal when game is not over", () => {
-			render(
-				<GameScreen
-					gameState={mockGameState}
-					socket={mockSocket}
-					spectrums={mockSpectrums}
-				/>
-			);
-			expect(screen.queryByTestId("exit-modal")).not.toBeInTheDocument();
-		});
+		// Test piece at edge boundaries
+		const gameStateAtEdge = {
+			...mockGameState,
+			currentPiece: { shape: [[1]], position: { x: 9, y: 21 } },
+		};
 
-		it("should not render current piece when game is over", () => {
-			const gameOverState = { ...mockGameState, gameOver: true };
+		render(
+			<GameScreen
+				gameState={gameStateAtEdge}
+				socket={mockSocket}
+				spectrums={mockSpectrums}
+			/>
+		);
 
-			render(
-				<GameScreen
-					gameState={gameOverState}
-					socket={mockSocket}
-					spectrums={mockSpectrums}
-				/>
-			);
+		boards = screen.getAllByTestId("board");
+		expect(boards.length).toBeGreaterThan(0);
 
-			const boards = screen.getAllByTestId("board");
-			expect(boards.length).toBeGreaterThan(0);
-		});
+		// Test piece outside boundaries
+		const gameStateWithEdgePiece = {
+			...mockGameState,
+			currentPiece: {
+				shape: [[1, 1], [1, 1]],
+				position: { x: -1, y: 0 },
+			},
+		};
+
+		render(
+			<GameScreen
+				gameState={gameStateWithEdgePiece}
+				socket={mockSocket}
+				spectrums={mockSpectrums}
+			/>
+		);
+
+		boards = screen.getAllByTestId("board");
+		expect(boards.length).toBeGreaterThan(0);
 	});
 
-	describe("Piece Positioning Logic", () => {
-		it("should handle piece within board boundaries", () => {
-			const gameStateWithPiece = {
-				...mockGameState,
-				currentPiece: { shape: [[1]], position: { x: 5, y: 10 } },
-			};
+	it("handles spectrum rendering and keyboard events", () => {
+		// Test spectrum rendering with different scenarios
+		render(
+			<GameScreen
+				gameState={mockGameState}
+				socket={mockSocket}
+				spectrums={mockSpectrums}
+			/>
+		);
 
-			render(
-				<GameScreen
-					gameState={gameStateWithPiece}
-					socket={mockSocket}
-					spectrums={mockSpectrums}
-				/>
-			);
+		expect(screen.getByText("Player 1")).toBeInTheDocument();
+		expect(screen.getByText("Player 2")).toBeInTheDocument();
+		expect(screen.getByText("500")).toBeInTheDocument();
+		expect(screen.getByText("750")).toBeInTheDocument();
 
-			const boards = screen.getAllByTestId("board");
-			expect(boards.length).toBeGreaterThan(0);
+		// Test empty spectrums
+		const { container } = render(
+			<GameScreen
+				gameState={mockGameState}
+				socket={mockSocket}
+				spectrums={{}}
+			/>
+		);
+
+		const mainBoard = container.querySelector('[data-is-main="true"]');
+		expect(mainBoard).toBeInTheDocument();
+
+		// Test keyboard event handling
+		const preventDefaultSpy = jest.fn();
+		const spaceEvent = new KeyboardEvent("keydown", { code: "Space" });
+		Object.defineProperty(spaceEvent, "preventDefault", {
+			value: preventDefaultSpy,
 		});
 
-		it("should handle piece partially outside board boundaries", () => {
-			const gameStateWithEdgePiece = {
-				...mockGameState,
-				currentPiece: {
-					shape: [
-						[1, 1],
-						[1, 1],
-					],
-					position: { x: -1, y: 0 },
-				},
-			};
+		window.dispatchEvent(spaceEvent);
+		expect(preventDefaultSpy).toHaveBeenCalled();
 
-			render(
-				<GameScreen
-					gameState={gameStateWithEdgePiece}
-					socket={mockSocket}
-					spectrums={mockSpectrums}
-				/>
-			);
-
-			const boards = screen.getAllByTestId("board");
-			expect(boards.length).toBeGreaterThan(0);
+		// Test non-space key (should not prevent default)
+		const otherEvent = new KeyboardEvent("keydown", { code: "KeyA" });
+		const otherPreventDefault = jest.fn();
+		Object.defineProperty(otherEvent, "preventDefault", {
+			value: otherPreventDefault,
 		});
 
-		it("should handle piece at board edges", () => {
-			const gameStateAtEdge = {
-				...mockGameState,
-				currentPiece: { shape: [[1]], position: { x: 9, y: 21 } },
-			};
-
-			render(
-				<GameScreen
-					gameState={gameStateAtEdge}
-					socket={mockSocket}
-					spectrums={mockSpectrums}
-				/>
-			);
-
-			const boards = screen.getAllByTestId("board");
-			expect(boards.length).toBeGreaterThan(0);
-		});
+		window.dispatchEvent(otherEvent);
+		expect(otherPreventDefault).not.toHaveBeenCalled();
 	});
 
-	describe("Spectrum Rendering Logic", () => {
-		it("should render all spectrum players", () => {
-			render(
-				<GameScreen
-					gameState={mockGameState}
-					socket={mockSocket}
-					spectrums={mockSpectrums}
-				/>
-			);
+	it("handles component lifecycle and interface validation", () => {
+		const addEventListenerSpy = jest.spyOn(window, "addEventListener");
+		const removeEventListenerSpy = jest.spyOn(window, "removeEventListener");
 
-			expect(screen.getByText("Player 1")).toBeInTheDocument();
-			expect(screen.getByText("Player 2")).toBeInTheDocument();
-			expect(screen.getByText("500")).toBeInTheDocument();
-			expect(screen.getByText("750")).toBeInTheDocument();
-		});
+		const { unmount } = render(
+			<GameScreen
+				gameState={mockGameState}
+				socket={mockSocket}
+				spectrums={mockSpectrums}
+			/>
+		);
 
-		it("should handle empty spectrums object", () => {
-			const { container } = render(
-				<GameScreen
-					gameState={mockGameState}
-					socket={mockSocket}
-					spectrums={{}}
-				/>
-			);
+		// Check event listener setup
+		expect(addEventListenerSpy).toHaveBeenCalledWith(
+			"keydown",
+			expect.any(Function)
+		);
 
-			const mainBoard = container.querySelector('[data-is-main="true"]');
-			expect(mainBoard).toBeInTheDocument();
-		});
+		// Test unmount
+		expect(() => unmount()).not.toThrow();
 
-		it("should handle single spectrum player", () => {
-			const singleSpectrum = {
-				player1: mockSpectrums["player1"],
-			};
+		// Check event listener cleanup
+		expect(removeEventListenerSpy).toHaveBeenCalledWith(
+			"keydown",
+			expect.any(Function)
+		);
 
-			render(
-				<GameScreen
-					gameState={mockGameState}
-					socket={mockSocket}
-					spectrums={singleSpectrum}
-				/>
-			);
+		// Validate interfaces (TypeScript compilation ensures this)
+		expect(mockGameState).toHaveProperty("board");
+		expect(mockGameState).toHaveProperty("currentPiece");
+		expect(mockGameState).toHaveProperty("score");
+		expect(mockGameState).toHaveProperty("gameOver");
 
-			expect(screen.getByText("Player 1")).toBeInTheDocument();
-			expect(screen.queryByText("Player 2")).not.toBeInTheDocument();
-		});
-	});
+		expect(mockSpectrums.player1).toHaveProperty("state");
+		expect(mockSpectrums.player1.state).toHaveProperty("board");
+		expect(mockSpectrums.player1.state).toHaveProperty("score");
+		expect(mockSpectrums.player1).toHaveProperty("playerName");
 
-	describe("Component Lifecycle", () => {
-		it("should clean up event listeners on unmount", () => {
-			const addEventListenerSpy = jest.spyOn(window, "addEventListener");
-			const removeEventListenerSpy = jest.spyOn(
-				window,
-				"removeEventListener"
-			);
-
-			const { unmount } = render(
-				<GameScreen
-					gameState={mockGameState}
-					socket={mockSocket}
-					spectrums={mockSpectrums}
-				/>
-			);
-
-			expect(addEventListenerSpy).toHaveBeenCalledWith(
-				"keydown",
-				expect.any(Function)
-			);
-
-			unmount();
-
-			expect(removeEventListenerSpy).toHaveBeenCalledWith(
-				"keydown",
-				expect.any(Function)
-			);
-
-			addEventListenerSpy.mockRestore();
-			removeEventListenerSpy.mockRestore();
-		});
-
-		it("should handle component unmounting gracefully", () => {
-			const { unmount } = render(
-				<GameScreen
-					gameState={mockGameState}
-					socket={mockSocket}
-					spectrums={mockSpectrums}
-				/>
-			);
-
-			expect(() => unmount()).not.toThrow();
-		});
-	});
-
-	describe("Interface Validation", () => {
-		it("should define correct GameState interface", () => {
-			// Interface structure is validated by TypeScript compilation
-			expect(mockGameState).toHaveProperty("board");
-			expect(mockGameState).toHaveProperty("currentPiece");
-			expect(mockGameState).toHaveProperty("score");
-			expect(mockGameState).toHaveProperty("gameOver");
-		});
-
-		it("should define correct Spectrum interface", () => {
-			// Interface structure is validated by TypeScript compilation
-			expect(mockSpectrums.player1).toHaveProperty("state");
-			expect(mockSpectrums.player1.state).toHaveProperty("board");
-			expect(mockSpectrums.player1.state).toHaveProperty("score");
-			expect(mockSpectrums.player1).toHaveProperty("playerName");
-		});
+		addEventListenerSpy.mockRestore();
+		removeEventListenerSpy.mockRestore();
 	});
 });

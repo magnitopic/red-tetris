@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import PlayIndex from "../index";
 
@@ -8,13 +8,67 @@ beforeAll(() => {
 	HTMLFormElement.prototype.requestSubmit = jest.fn();
 });
 
+// Mock MsgCard component to test interaction
+jest.mock("../../../components/common/MsgCard", () => {
+	return function MockMsgCard({
+		type,
+		message,
+		onClose,
+	}: {
+		type: string;
+		message: string;
+		onClose: () => void;
+	}) {
+		return (
+			<div data-testid="msg-card" data-type={type}>
+				<span data-testid="message">{message}</span>
+				<button data-testid="close-button" onClick={onClose}>
+					Close
+				</button>
+			</div>
+		);
+	};
+});
+
+// Mock the child components
+jest.mock("../StartGame", () => {
+	return function MockStartGame() {
+		return <div data-testid="start-game">Start Playing</div>;
+	};
+});
+
+jest.mock("../Ranking", () => {
+	return function MockRanking() {
+		return <div data-testid="ranking">Global Player Ranking</div>;
+	};
+});
+
 describe("PlayIndex", () => {
-	it("renders main layout structure", () => {
-		render(
-			<MemoryRouter>
+	// Mock window.history.replaceState
+	const mockReplaceState = jest.fn();
+
+	beforeEach(() => {
+		jest.clearAllMocks();
+		// Mock window.history.replaceState
+		Object.defineProperty(window, "history", {
+			value: {
+				replaceState: mockReplaceState,
+			},
+			writable: true,
+		});
+	});
+
+	const renderPlayIndex = (initialEntries = ["/play"]) => {
+		return render(
+			<MemoryRouter initialEntries={initialEntries}>
 				<PlayIndex />
 			</MemoryRouter>
 		);
+	};
+
+	it("should render layout and handle basic error state management", async () => {
+		// Test basic layout without error
+		renderPlayIndex();
 
 		const main = screen.getByRole("main");
 		expect(main).toBeInTheDocument();
@@ -25,56 +79,123 @@ describe("PlayIndex", () => {
 			"items-center",
 			"flex-col"
 		);
+
+		// Test container structure and child components
+		const container = document.querySelector(".container.max-w-4xl");
+		expect(container).toBeInTheDocument();
+		expect(screen.getByTestId("start-game")).toBeInTheDocument();
+		expect(screen.getByTestId("ranking")).toBeInTheDocument();
+
+		// Should not show MsgCard when no error
+		expect(screen.queryByTestId("msg-card")).not.toBeInTheDocument();
+		expect(mockReplaceState).not.toHaveBeenCalled();
 	});
 
-	it("renders container with correct classes", () => {
-		const { container } = render(
-			<MemoryRouter>
-				<PlayIndex />
-			</MemoryRouter>
-		);
-
-		expect(
-			container.querySelector(".container.max-w-4xl")
-		).toBeInTheDocument();
-	});
-
-	it("shows error message when passed via location state", () => {
+	it("should handle error messages and message lifecycle", async () => {
 		const errorMessage = "Something went wrong";
 
-		render(
-			<MemoryRouter
-				initialEntries={[
-					{ pathname: "/play", state: { error: errorMessage } },
-				]}
-			>
-				<PlayIndex />
-			</MemoryRouter>
-		);
+		renderPlayIndex([
+			{ pathname: "/play", state: { error: errorMessage } },
+		]);
 
-		expect(screen.getByText(errorMessage)).toBeInTheDocument();
+		// Test that MsgCard is displayed with error
+		await waitFor(() => {
+			expect(screen.getByTestId("msg-card")).toBeInTheDocument();
+		});
+
+		const msgCard = screen.getByTestId("msg-card");
+		expect(msgCard).toHaveAttribute("data-type", "error");
+		expect(screen.getByTestId("message")).toHaveTextContent(errorMessage);
+
+		// Test that window.history.replaceState was called to clear state
+		expect(mockReplaceState).toHaveBeenCalledWith({}, document.title);
+
+		// Test onClose functionality - clicking close button should remove message
+		const closeButton = screen.getByTestId("close-button");
+		fireEvent.click(closeButton);
+
+		// Message should be removed from DOM
+		await waitFor(() => {
+			expect(screen.queryByTestId("msg-card")).not.toBeInTheDocument();
+		});
 	});
 
-	it("does not show error message when no error in location state", () => {
-		render(
-			<MemoryRouter>
-				<PlayIndex />
-			</MemoryRouter>
-		);
+	it("should handle complex error scenarios and edge cases", async () => {
+		// Test with empty error string - should NOT show message card because empty string is falsy
+		const { unmount } = renderPlayIndex([
+			{ pathname: "/play", state: { error: "" } },
+		]);
 
-		// Should not show any error message
-		expect(screen.queryByText(/error/i)).not.toBeInTheDocument();
+		// Empty string should not trigger the message card since if (location.state?.error) is falsy for ""
+		expect(screen.queryByTestId("msg-card")).not.toBeInTheDocument();
+		expect(mockReplaceState).not.toHaveBeenCalled();
+
+		unmount();
+
+		// Test with a meaningful error message to verify it still works
+		renderPlayIndex([
+			{ pathname: "/play", state: { error: "Real error message" } },
+		]);
+
+		await waitFor(() => {
+			expect(screen.getByTestId("msg-card")).toBeInTheDocument();
+			expect(screen.getByTestId("message")).toHaveTextContent(
+				"Real error message"
+			);
+		});
+
+		expect(mockReplaceState).toHaveBeenCalledWith({}, document.title);
+
+		// Close message and test multiple error handling
+		fireEvent.click(screen.getByTestId("close-button"));
+
+		await waitFor(() => {
+			expect(screen.queryByTestId("msg-card")).not.toBeInTheDocument();
+		});
 	});
 
-	it("renders both child components sections", () => {
-		render(
-			<MemoryRouter>
-				<PlayIndex />
-			</MemoryRouter>
-		);
+	it("should handle key generation and component re-rendering", async () => {
+		const errorMessage = "Key test error";
 
-		// Should contain content from StartGame and Ranking components
-		expect(screen.getByText(/start playing/i)).toBeInTheDocument();
-		expect(screen.getByText(/global player ranking/i)).toBeInTheDocument();
+		// Mock Date.now to control key generation
+		const mockDateNow = jest
+			.spyOn(Date, "now")
+			.mockReturnValueOnce(12345)
+			.mockReturnValueOnce(67890);
+
+		// First render
+		const { unmount: unmount1 } = renderPlayIndex([
+			{ pathname: "/play", state: { error: errorMessage } },
+		]);
+
+		await waitFor(() => {
+			expect(screen.getByTestId("msg-card")).toBeInTheDocument();
+		});
+
+		// Close first message
+		fireEvent.click(screen.getByTestId("close-button"));
+
+		await waitFor(() => {
+			expect(screen.queryByTestId("msg-card")).not.toBeInTheDocument();
+		});
+
+		unmount1();
+
+		// Second render with same error but different key - tests component lifecycle
+		renderPlayIndex([
+			{ pathname: "/play", state: { error: errorMessage } },
+		]);
+
+		await waitFor(() => {
+			expect(screen.getByTestId("msg-card")).toBeInTheDocument();
+			expect(screen.getByTestId("message")).toHaveTextContent(
+				errorMessage
+			);
+		});
+
+		// Verify Date.now was called for key generation
+		expect(mockDateNow).toHaveBeenCalledTimes(2);
+
+		mockDateNow.mockRestore();
 	});
 });

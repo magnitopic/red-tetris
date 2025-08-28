@@ -55,7 +55,7 @@ const index = () => {
 		<main className="flex flex-1 justify-center items-center flex-col">
 			<section className="w-full flex flex-col items-center gap-12">
 				<section className="container max-w-4xl text-center mt-20 px-3 relative">
-					<MainInformation user={userProfile} />
+					<MainInformation user={userProfile} onProfileUpdate={handleProfileUpdate} />
 				</section>
 			</section>
 		</main>

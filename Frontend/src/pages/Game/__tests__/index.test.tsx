@@ -235,6 +235,13 @@ describe("Game Index Component", () => {
 	});
 
 	it("handles host functionality and screen transitions", async () => {
+		// Mock window.history.pushState for this test
+		const mockPushState = jest.fn();
+		Object.defineProperty(window, 'history', {
+			value: { pushState: mockPushState },
+			writable: true,
+		});
+
 		renderGameIndex({ clientRoomId: "123456" });
 
 		await waitFor(() => {
@@ -256,6 +263,8 @@ describe("Game Index Component", () => {
 
 		await waitFor(() => {
 			expect(screen.getByTestId("host-screen")).toBeInTheDocument();
+			// Test that window.history.pushState was called with the seed
+			expect(mockPushState).toHaveBeenCalledWith({}, "", "/game/test-seed");
 		});
 
 		// Test new host assignment
@@ -378,17 +387,18 @@ describe("Game Index Component", () => {
 			});
 		}
 
-		// Test ignoring removed players
+		// Test player left with both playerId and userId to trigger spectrum deletion
 		if (playerLeftHandler) {
 			playerLeftHandler({
-				playerId: "removed-player",
-				userId: "removed-user",
+				playerId: "removed-player-id",
+				userId: "removed-user-id",
 			});
 		}
 
+		// Test ignoring game state from removed players
 		if (gameStateHandler) {
 			gameStateHandler({
-				playerId: "removed-player",
+				playerId: "removed-player-id",
 				state: { board: [], currentPiece: null, gameOver: false },
 				playerName: "removedPlayer",
 			});
@@ -400,6 +410,14 @@ describe("Game Index Component", () => {
 				playerId: "different-socket-id",
 				state: { board: [], currentPiece: null, gameOver: false },
 				playerName: "testuser",
+			});
+		}
+
+		// Test player left with only playerId (no userId) to cover different spectrum deletion path
+		if (playerLeftHandler) {
+			playerLeftHandler({
+				playerId: "another-removed-player",
+				userId: null,
 			});
 		}
 
@@ -452,6 +470,71 @@ describe("Game Index Component", () => {
 		await waitFor(() => {
 			expect(screen.getByTestId("waiting-modal")).toBeInTheDocument();
 		});
+	});
+
+	it("handles additional socket events and player management", async () => {
+		renderGameIndex({ clientRoomId: "123456" });
+
+		await waitFor(() => {
+			expect(mockSocket.on).toHaveBeenCalledWith("invalid_user", expect.any(Function));
+			expect(mockSocket.on).toHaveBeenCalledWith("already_playing", expect.any(Function));
+			expect(mockSocket.on).toHaveBeenCalledWith("player_joined", expect.any(Function));
+		});
+
+		// Test invalid_user event
+		const invalidUserHandler = mockSocket.on.mock.calls.find(
+			(call) => call[0] === "invalid_user"
+		)?.[1];
+
+		if (invalidUserHandler) {
+			invalidUserHandler();
+		}
+
+		await waitFor(() => {
+			expect(mockNavigateFn).toHaveBeenCalledWith("/play", {
+				state: { error: "Invalid user." },
+			});
+		});
+
+		// Reset for already_playing test
+		jest.clearAllMocks();
+		mockNavigate.mockReturnValue(mockNavigateFn);
+		
+		// Re-render to get fresh handlers
+		renderGameIndex({ clientRoomId: "123456" });
+
+		await waitFor(() => {
+			expect(mockSocket.on).toHaveBeenCalledWith("already_playing", expect.any(Function));
+		});
+
+		const alreadyPlayingHandler = mockSocket.on.mock.calls.find(
+			(call) => call[0] === "already_playing"
+		)?.[1];
+
+		if (alreadyPlayingHandler) {
+			alreadyPlayingHandler();
+		}
+
+		await waitFor(() => {
+			expect(mockNavigateFn).toHaveBeenCalledWith("/play", {
+				state: { error: "This user is already playing." },
+			});
+		});
+
+		// Test player_joined event
+		const playerJoinedHandler = mockSocket.on.mock.calls.find(
+			(call) => call[0] === "player_joined"
+		)?.[1];
+
+		if (playerJoinedHandler) {
+			playerJoinedHandler({
+				playerId: "new-player-id",
+				playerName: "NewPlayer",
+			});
+		}
+
+		// Since we can't easily test state updates, we just verify the handler was called
+		expect(mockSocket.on).toHaveBeenCalledWith("player_joined", expect.any(Function));
 	});
 
 	it("handles component cleanup and socket disconnection", () => {

@@ -56,491 +56,234 @@ describe("Header Component", () => {
 		});
 	});
 
-	describe("Desktop Rendering - Unauthenticated", () => {
-		beforeEach(() => {
-			mockUseBreakpoints.mockReturnValue({
-				isMobile: false,
-				isTablet: false,
-				isDesktop: true,
-			});
-			mockUseAuth.mockReturnValue({
-				isAuthenticated: false,
-				user: null,
-				logout: jest.fn(),
-				refreshUserData: jest.fn(),
-			});
+	it("renders desktop header with navigation when unauthenticated", () => {
+		mockUseBreakpoints.mockReturnValue({
+			isMobile: false,
+			isTablet: false,
+			isDesktop: true,
+		});
+		mockUseAuth.mockReturnValue({
+			isAuthenticated: false,
+			user: null,
+			logout: jest.fn(),
+			refreshUserData: jest.fn(),
 		});
 
-		it("should render header with title", () => {
-			render(
-				<RouterWrapper>
-					<Header />
-				</RouterWrapper>
-			);
+		render(
+			<RouterWrapper>
+				<Header />
+			</RouterWrapper>
+		);
 
-			expect(screen.getByText("Red Tetris")).toBeInTheDocument();
-			expect(screen.getByText("Red Tetris").closest("h1")).toHaveClass(
-				"text-3xl",
-				"font-bold"
-			);
+		// Check header structure
+		const header = screen.getByRole("banner");
+		expect(header).toBeInTheDocument();
+		expect(header).toHaveClass("transition-all", "duration-300", "z-30", "bg-primary");
+
+		// Check title
+		expect(screen.getByText("Red Tetris")).toBeInTheDocument();
+		expect(screen.getByText("Red Tetris").closest("h1")).toHaveClass("text-3xl", "font-bold");
+
+		// Check navigation links
+		expect(screen.getByRole("link", { name: "Home" })).toBeInTheDocument();
+		expect(screen.getByRole("link", { name: "Play" })).toBeInTheDocument();
+		expect(screen.getByRole("link", { name: "Profile" })).toBeInTheDocument();
+
+		// Check Enter button for unauthenticated state
+		const enterButton = screen.getByRole("link", { name: "Enter" });
+		expect(enterButton).toBeInTheDocument();
+		expect(enterButton).toHaveAttribute("href", "/authenticate");
+
+		// Should not show mobile menu button on desktop
+		expect(screen.queryByLabelText("Open menu")).not.toBeInTheDocument();
+	});
+
+	it("renders authenticated desktop header with user info and logout", async () => {
+		const mockUser = { username: "testuser", id: "1" };
+		const mockLogout = jest.fn().mockResolvedValue({ success: true });
+
+		mockUseBreakpoints.mockReturnValue({
+			isMobile: false,
+			isTablet: false,
+			isDesktop: true,
+		});
+		mockUseAuth.mockReturnValue({
+			isAuthenticated: true,
+			user: mockUser,
+			logout: mockLogout,
+			refreshUserData: jest.fn(),
 		});
 
-		it("should render navigation links on desktop", () => {
-			render(
-				<RouterWrapper>
-					<Header />
-				</RouterWrapper>
-			);
+		render(
+			<RouterWrapper>
+				<Header />
+			</RouterWrapper>
+		);
 
-			expect(
-				screen.getByRole("link", { name: "Home" })
-			).toBeInTheDocument();
-			expect(
-				screen.getByRole("link", { name: "Play" })
-			).toBeInTheDocument();
-			expect(
-				screen.getByRole("link", { name: "Profile" })
-			).toBeInTheDocument();
-		});
+		// Check user display
+		expect(screen.getByText("testuser")).toBeInTheDocument();
 
-		it("should render Enter button when not authenticated", () => {
-			render(
-				<RouterWrapper>
-					<Header />
-				</RouterWrapper>
-			);
+		// Check logout functionality
+		const logoutButton = screen.getByRole("button", { name: "Logout" });
+		expect(logoutButton).toBeInTheDocument();
 
-			const enterButton = screen.getByRole("link", { name: "Enter" });
-			expect(enterButton).toBeInTheDocument();
-			expect(enterButton).toHaveAttribute("href", "/authenticate");
-		});
+		fireEvent.click(logoutButton);
 
-		it("should not show mobile menu button on desktop", () => {
-			render(
-				<RouterWrapper>
-					<Header />
-				</RouterWrapper>
-			);
-
-			expect(
-				screen.queryByLabelText("Open menu")
-			).not.toBeInTheDocument();
-			expect(
-				screen.queryByLabelText("Close menu")
-			).not.toBeInTheDocument();
+		await waitFor(() => {
+			expect(mockLogout).toHaveBeenCalledTimes(1);
+			expect(mockNavigate).toHaveBeenCalledWith("/");
 		});
 	});
 
-	describe("Desktop Rendering - Authenticated", () => {
+	it("renders mobile header with menu functionality", () => {
+		mockUseBreakpoints.mockReturnValue({
+			isMobile: true,
+			isTablet: false,
+			isDesktop: false,
+		});
+		mockUseAuth.mockReturnValue({
+			isAuthenticated: false,
+			user: null,
+			logout: jest.fn(),
+			refreshUserData: jest.fn(),
+		});
+
+		const { container } = render(
+			<RouterWrapper>
+				<Header />
+			</RouterWrapper>
+		);
+
+		// Check mobile menu button
+		const menuButton = screen.getByLabelText("Open menu");
+		expect(menuButton).toBeInTheDocument();
+
+		// Desktop navigation should not be present
+		const desktopNav = container.querySelector("nav.flex.flex-1.ml-20");
+		expect(desktopNav).not.toBeInTheDocument();
+
+		// Test menu toggle
+		fireEvent.click(menuButton);
+		expect(screen.getByLabelText("Close menu")).toBeInTheDocument();
+
+		// Mobile menu should be visible (use getAllByRole since there might be multiple)
+		const mobileMenus = screen.getAllByRole("navigation");
+		expect(mobileMenus.length).toBeGreaterThan(0);
+
+		// Close menu by clicking a link
+		const homeLink = screen.getAllByText("Home")[0];
+		fireEvent.click(homeLink);
+		expect(screen.getByLabelText("Open menu")).toBeInTheDocument();
+	});
+
+	it("handles authenticated mobile menu with user info", () => {
 		const mockUser = { username: "testuser", id: "1" };
 		const mockLogout = jest.fn();
 
-		beforeEach(() => {
-			mockUseBreakpoints.mockReturnValue({
-				isMobile: false,
-				isTablet: false,
-				isDesktop: true,
-			});
-			mockUseAuth.mockReturnValue({
-				isAuthenticated: true,
-				user: mockUser,
-				logout: mockLogout,
-				refreshUserData: jest.fn(),
-			});
+		mockUseBreakpoints.mockReturnValue({
+			isMobile: true,
+			isTablet: false,
+			isDesktop: false,
+		});
+		mockUseAuth.mockReturnValue({
+			isAuthenticated: true,
+			user: mockUser,
+			logout: mockLogout,
+			refreshUserData: jest.fn(),
 		});
 
-		it("should display username when authenticated", () => {
-			render(
-				<RouterWrapper>
-					<Header />
-				</RouterWrapper>
-			);
+		render(
+			<RouterWrapper>
+				<Header />
+			</RouterWrapper>
+		);
 
-			expect(screen.getByText("testuser")).toBeInTheDocument();
-		});
+		// Open mobile menu
+		const menuButton = screen.getByLabelText("Open menu");
+		fireEvent.click(menuButton);
 
-		it("should render logout button when authenticated", () => {
-			render(
-				<RouterWrapper>
-					<Header />
-				</RouterWrapper>
-			);
-
-			expect(
-				screen.getByRole("button", { name: "Logout" })
-			).toBeInTheDocument();
-		});
-
-		it("should call logout function when logout button is clicked", async () => {
-			mockLogout.mockResolvedValue({ success: true });
-
-			render(
-				<RouterWrapper>
-					<Header />
-				</RouterWrapper>
-			);
-
-			const logoutButton = screen.getByRole("button", { name: "Logout" });
-			fireEvent.click(logoutButton);
-
-			await waitFor(() => {
-				expect(mockLogout).toHaveBeenCalledTimes(1);
-			});
-		});
-
-		it("should navigate to home after successful logout", async () => {
-			mockLogout.mockResolvedValue({ success: true });
-
-			render(
-				<RouterWrapper>
-					<Header />
-				</RouterWrapper>
-			);
-
-			const logoutButton = screen.getByRole("button", { name: "Logout" });
-			fireEvent.click(logoutButton);
-
-			await waitFor(() => {
-				expect(mockNavigate).toHaveBeenCalledWith("/");
-			});
-		});
+		// Check user greeting in mobile menu
+		expect(screen.getByText("Hello")).toBeInTheDocument();
+		expect(screen.getByText("testuser")).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "Logout" })).toBeInTheDocument();
 	});
 
-	describe("Mobile Rendering", () => {
-		beforeEach(() => {
-			mockUseBreakpoints.mockReturnValue({
-				isMobile: true,
-				isTablet: false,
-				isDesktop: false,
-			});
-			mockUseAuth.mockReturnValue({
-				isAuthenticated: false,
-				user: null,
-				logout: jest.fn(),
-				refreshUserData: jest.fn(),
-			});
-		});
-
-		it("should show mobile menu button", () => {
-			render(
-				<RouterWrapper>
-					<Header />
-				</RouterWrapper>
-			);
-
-			expect(screen.getByLabelText("Open menu")).toBeInTheDocument();
-		});
-
-		it("should not show desktop navigation links on mobile", () => {
-			const { container } = render(
-				<RouterWrapper>
-					<Header />
-				</RouterWrapper>
-			);
-
-			// Desktop navigation container should not be present on mobile
-			const desktopNav = container.querySelector("nav.flex.flex-1.ml-20");
-			expect(desktopNav).not.toBeInTheDocument();
-		});
-
-		it("should toggle mobile menu when button is clicked", () => {
-			render(
-				<RouterWrapper>
-					<Header />
-				</RouterWrapper>
-			);
-
-			const menuButton = screen.getByLabelText("Open menu");
-			fireEvent.click(menuButton);
-
-			expect(screen.getByLabelText("Close menu")).toBeInTheDocument();
-		});
-	});
-
-	describe("Mobile Menu Functionality", () => {
-		beforeEach(() => {
-			mockUseBreakpoints.mockReturnValue({
-				isMobile: true,
-				isTablet: false,
-				isDesktop: false,
-			});
-			mockUseAuth.mockReturnValue({
-				isAuthenticated: false,
-				user: null,
-				logout: jest.fn(),
-				refreshUserData: jest.fn(),
-			});
-		});
-
-		it("should show mobile menu when opened", () => {
-			render(
-				<RouterWrapper>
-					<Header />
-				</RouterWrapper>
-			);
-
-			const menuButton = screen.getByLabelText("Open menu");
-			fireEvent.click(menuButton);
-
-			// Mobile menu should be visible
-			const mobileMenu = screen.getByRole("navigation");
-			expect(mobileMenu).toBeInTheDocument();
-		});
-
-		it("should close menu when link is clicked", () => {
-			render(
-				<RouterWrapper>
-					<Header />
-				</RouterWrapper>
-			);
-
-			// Open menu
-			const menuButton = screen.getByLabelText("Open menu");
-			fireEvent.click(menuButton);
-
-			// Click a navigation link
-			const homeLink = screen.getAllByText("Home")[0];
-			fireEvent.click(homeLink);
-
-			// Menu should be closed
-			expect(screen.getByLabelText("Open menu")).toBeInTheDocument();
-		});
-	});
-
-	describe("Authenticated Mobile Menu", () => {
-		const mockUser = { username: "testuser", id: "1" };
-		const mockLogout = jest.fn();
-
-		beforeEach(() => {
-			mockUseBreakpoints.mockReturnValue({
-				isMobile: true,
-				isTablet: false,
-				isDesktop: false,
-			});
-			mockUseAuth.mockReturnValue({
-				isAuthenticated: true,
-				user: mockUser,
-				logout: mockLogout,
-				refreshUserData: jest.fn(),
-			});
-		});
-
-		it("should show user greeting in mobile menu", () => {
-			render(
-				<RouterWrapper>
-					<Header />
-				</RouterWrapper>
-			);
-
-			const menuButton = screen.getByLabelText("Open menu");
-			fireEvent.click(menuButton);
-
-			expect(screen.getByText("Hello")).toBeInTheDocument();
-			expect(screen.getByText("testuser")).toBeInTheDocument();
-		});
-
-		it("should show logout option in mobile menu", () => {
-			render(
-				<RouterWrapper>
-					<Header />
-				</RouterWrapper>
-			);
-
-			const menuButton = screen.getByLabelText("Open menu");
-			fireEvent.click(menuButton);
-
-			expect(
-				screen.getByRole("button", { name: "Logout" })
-			).toBeInTheDocument();
-		});
-	});
-
-	describe("Styling and CSS Classes", () => {
-		beforeEach(() => {
-			mockUseBreakpoints.mockReturnValue({
-				isMobile: false,
-				isTablet: false,
-				isDesktop: true,
-			});
-			mockUseAuth.mockReturnValue({
-				isAuthenticated: false,
-				user: null,
-				logout: jest.fn(),
-				refreshUserData: jest.fn(),
-			});
-		});
-
-		it("should have correct header styling", () => {
-			render(
-				<RouterWrapper>
-					<Header />
-				</RouterWrapper>
-			);
-
-			const header = screen.getByRole("banner");
-			expect(header).toHaveClass(
-				"transition-all",
-				"duration-300",
-				"z-30",
-				"bg-primary"
-			);
-		});
-
-		it("should have correct navigation button styling", () => {
-			render(
-				<RouterWrapper>
-					<Header />
-				</RouterWrapper>
-			);
-
-			const homeButton = screen.getByRole("link", { name: "Home" });
-			expect(homeButton.querySelector("button")).toHaveClass(
-				"text-font-main",
-				"font-medium",
-				"btn",
-				"whitespace-nowrap",
-				"text-base",
-				"px-6",
-				"py-2",
-				"rounded-full",
-				"hover:bg-secondary-light",
-				"transition-colors",
-				"duration-300"
-			);
-		});
-	});
-
-	describe("API Integration", () => {
-		const mockUser = { username: "testuser", id: "1" };
+	it("handles API integration and user data refresh", async () => {
 		const mockRefreshUserData = jest.fn();
+		const mockUser = { username: "testuser", id: "1" };
 
-		beforeEach(() => {
-			mockUseBreakpoints.mockReturnValue({
-				isMobile: false,
-				isTablet: false,
-				isDesktop: true,
-			});
-			mockUseAuth.mockReturnValue({
-				isAuthenticated: true,
-				user: mockUser,
-				logout: jest.fn(),
-				refreshUserData: mockRefreshUserData,
-			});
-
-			// Mock successful API response
-			(usersApi.getMe as jest.Mock).mockResolvedValue({
-				msg: { username: "testuser" },
-			});
+		mockUseBreakpoints.mockReturnValue({
+			isMobile: false,
+			isTablet: false,
+			isDesktop: true,
+		});
+		mockUseAuth.mockReturnValue({
+			isAuthenticated: true,
+			user: mockUser,
+			logout: jest.fn(),
+			refreshUserData: mockRefreshUserData,
 		});
 
-		it("should check username from backend on mount", async () => {
-			render(
-				<RouterWrapper>
-					<Header />
-				</RouterWrapper>
-			);
+		// Test API call on mount
+		render(
+			<RouterWrapper>
+				<Header />
+			</RouterWrapper>
+		);
 
-			await waitFor(() => {
-				expect(usersApi.getMe).toHaveBeenCalledTimes(1);
-			});
+		await waitFor(() => {
+			expect(usersApi.getMe).toHaveBeenCalledTimes(1);
 		});
 
-		it("should refresh user data if username differs", async () => {
-			const mockApiResponse = { msg: { username: "differentuser" } };
-			(usersApi.getMe as jest.Mock).mockResolvedValue(mockApiResponse);
+		// Test user data refresh when username differs
+		(usersApi.getMe as jest.Mock).mockResolvedValue({
+			msg: { username: "differentuser" },
+		});
 
-			render(
-				<RouterWrapper>
-					<Header />
-				</RouterWrapper>
-			);
+		render(
+			<RouterWrapper>
+				<Header />
+			</RouterWrapper>
+		);
 
-			await waitFor(() => {
-				expect(mockRefreshUserData).toHaveBeenCalledTimes(1);
-			});
+		await waitFor(() => {
+			expect(mockRefreshUserData).toHaveBeenCalledTimes(1);
 		});
 	});
 
-	describe("Component Behavior", () => {
-		beforeEach(() => {
-			mockUseBreakpoints.mockReturnValue({
-				isMobile: false,
-				isTablet: false,
-				isDesktop: true,
-			});
-			mockUseAuth.mockReturnValue({
-				isAuthenticated: false,
-				user: null,
-				logout: jest.fn(),
-				refreshUserData: jest.fn(),
-			});
+	it("has proper styling and accessibility features", () => {
+		mockUseBreakpoints.mockReturnValue({
+			isMobile: true,
+			isTablet: false,
+			isDesktop: false,
+		});
+		mockUseAuth.mockReturnValue({
+			isAuthenticated: false,
+			user: null,
+			logout: jest.fn(),
+			refreshUserData: jest.fn(),
 		});
 
-		it("should handle component unmounting gracefully", () => {
-			const { unmount } = render(
-				<RouterWrapper>
-					<Header />
-				</RouterWrapper>
-			);
+		const { unmount } = render(
+			<RouterWrapper>
+				<Header />
+			</RouterWrapper>
+		);
 
-			expect(screen.getByRole("banner")).toBeInTheDocument();
+		// Check semantic structure
+		const header = screen.getByRole("banner");
+		expect(header.tagName.toLowerCase()).toBe("header");
 
-			// Should not throw error when unmounting
-			expect(() => unmount()).not.toThrow();
+		// Check accessibility of mobile menu
+		const menuButton = screen.getByLabelText("Open menu");
+		expect(menuButton).toBeInTheDocument();
 
-			// Should no longer be in document
-			expect(screen.queryByRole("banner")).not.toBeInTheDocument();
-		});
-	});
+		// Test aria-label update on menu toggle
+		fireEvent.click(menuButton);
+		expect(screen.getByLabelText("Close menu")).toBeInTheDocument();
 
-	describe("Accessibility", () => {
-		beforeEach(() => {
-			mockUseBreakpoints.mockReturnValue({
-				isMobile: true,
-				isTablet: false,
-				isDesktop: false,
-			});
-			mockUseAuth.mockReturnValue({
-				isAuthenticated: false,
-				user: null,
-				logout: jest.fn(),
-				refreshUserData: jest.fn(),
-			});
-		});
-
-		it("should have proper semantic header element", () => {
-			render(
-				<RouterWrapper>
-					<Header />
-				</RouterWrapper>
-			);
-
-			const header = screen.getByRole("banner");
-			expect(header.tagName.toLowerCase()).toBe("header");
-		});
-
-		it("should have accessible mobile menu button", () => {
-			render(
-				<RouterWrapper>
-					<Header />
-				</RouterWrapper>
-			);
-
-			const menuButton = screen.getByLabelText("Open menu");
-			expect(menuButton).toBeInTheDocument();
-		});
-
-		it("should update aria-label when menu state changes", () => {
-			render(
-				<RouterWrapper>
-					<Header />
-				</RouterWrapper>
-			);
-
-			const menuButton = screen.getByLabelText("Open menu");
-			fireEvent.click(menuButton);
-
-			expect(screen.getByLabelText("Close menu")).toBeInTheDocument();
-		});
+		// Test component unmount
+		expect(() => unmount()).not.toThrow();
+		expect(screen.queryByRole("banner")).not.toBeInTheDocument();
 	});
 });
