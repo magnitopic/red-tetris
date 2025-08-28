@@ -45,17 +45,16 @@ export default function createSocketServer(httpServer) {
                     return;
                 }
 
-                // Check if player with same name is already playing a game
-                players.forEach((p) => {
-                    if (p.name === playerName) {
-                        socket.emit('already_playing', {
-                            message:
-                                'This user is already playing in another room.',
-                        });
-                        socket.disconnect();
-                        return;
-                    }
-                });
+                // Check if player with same userId is already playing a game
+                const existingPlayer = players.get(userId);
+                if (existingPlayer) {
+                    socket.emit('already_playing', {
+                        message:
+                            'This user is already playing in another room.',
+                    });
+                    socket.disconnect();
+                    return;
+                }
 
                 socket.userId = userId;
                 socketToUserId.set(socket.id, userId);
