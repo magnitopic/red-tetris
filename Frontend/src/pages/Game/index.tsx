@@ -22,7 +22,7 @@ const index: React.FC = () => {
 	const navigate = useNavigate();
 	let { clientRoomId } = useParams();
 	const { user } = useAuth();
-	const { fetchGame } = useGamePlayers(); // Add this hook
+	const { fetchGame } = useGamePlayers();
 	const [isHost, setIsHost] = useState(false);
 	const [currentPlayers, setCurrentPlayers] = useState<Player[]>([]);
 	const [seed, setSeed] = useState("");

@@ -275,6 +275,26 @@ export default function createSocketServer(httpServer) {
             const gameRoom = games.get(room);
 
             if (gameRoom) {
+                // Update player's score in database before removing them
+                const playerGame = gameRoom.playerGames.get(userId);
+                if (playerGame && gameRoom.id) {
+                    try {
+                        const currentScore = playerGame.getState().score || 0;
+                        await gamePlayersModel.updateByReference(
+                            { score: currentScore },
+                            { game_id: gameRoom.id, user_id: userId }
+                        );
+                        console.log(
+                            `Updated score for disconnected player ${userId}: ${currentScore}`
+                        );
+                    } catch (err) {
+                        console.error(
+                            'Error updating player score on disconnect:',
+                            err.message
+                        );
+                    }
+                }
+
                 gameRoom.players.delete(userId);
                 gameRoom.playerGames.delete(userId);
 
