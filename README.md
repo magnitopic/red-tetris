@@ -11,52 +11,59 @@ A modern, real-time multiplayer Tetris game built with cutting-edge web technolo
 ## 🌟 Features
 
 ### 🎯 Core Gameplay
-- **Classic Tetris Mechanics**: Authentic piece movement, rotation, and line clearing
-- **Real-time Multiplayer**: Synchronized gameplay with multiple players
-- **Room-based Matches**: Create or join game rooms with friends
-- **Spectator Mode**: Watch ongoing games when joining in progress
-- **Dynamic Difficulty**: Speed increases as the game progresses
+
+-   **Classic Tetris Mechanics**: Authentic piece movement, rotation, and line clearing
+-   **Real-time Multiplayer**: Synchronized gameplay with multiple players
+-   **Room-based Matches**: Create or join game rooms with friends
+-   **Spectator Mode**: Watch ongoing games when joining in progress
+-   **Dynamic Difficulty**: Speed increases as the game progresses
 
 ### 🔐 User Management
-- **OAuth Integration**: Login with GitHub, Google, 42, and Twitch
-- **User Profiles**: Customizable profiles with scores tracking
-- **Profile Pictures**: Upload and manage custom avatars
+
+-   **OAuth Integration**: Login with GitHub, Google, 42, and Twitch
+-   **User Profiles**: Customizable profiles with scores tracking
+-   **Profile Pictures**: Upload and manage custom avatars
 
 ### 🚀 Real-time Features
-- **WebSocket Communication**: Instant game state synchronization
-- **Live Game Updates**: See opponents' moves in real-time
-- **Room Management**: Host controls, player management, and dynamic host switching
-- **Connection Handling**: Robust reconnection and error handling
+
+-   **WebSocket Communication**: Instant game state synchronization
+-   **Live Game Updates**: See opponents' moves in real-time
+-   **Room Management**: Host controls, player management, and dynamic host switching
+-   **Connection Handling**: Robust reconnection and error handling
 
 ### 🎨 Modern UI/UX
-- **Responsive Design**: Optimized for desktop and mobile devices
-- **Smooth Animations**: Fluid piece movements and transitions
-- **Accessibility**: Keyboard navigation and screen reader support
+
+-   **Responsive Design**: Optimized for desktop and mobile devices
+-   **Smooth Animations**: Fluid piece movements and transitions
+-   **Accessibility**: Keyboard navigation and screen reader support
 
 ## 🛠 Technology Stack
 
 ### Backend
-- **Node.js + Express**: RESTful API and server infrastructure
-- **Socket.io**: Real-time bidirectional communication
-- **PostgreSQL**: Robust data persistence and user management
-- **JWT Authentication**: Secure token-based authentication
-- **OAuth 2.0**: Third-party authentication integration
-- **Jest**: Comprehensive testing with 70%+ coverage
+
+-   **Node.js + Express**: RESTful API and server infrastructure
+-   **Socket.io**: Real-time bidirectional communication
+-   **PostgreSQL**: Robust data persistence and user management
+-   **JWT Authentication**: Secure token-based authentication
+-   **OAuth 2.0**: Third-party authentication integration
+-   **Jest**: Comprehensive testing with 70%+ coverage
 
 ### Frontend
-- **React 18**: Modern component-based UI framework
-- **TypeScript**: Type-safe development experience
-- **Vite**: Lightning-fast build tool and development server
-- **Tailwind CSS**: Utility-first CSS framework
-- **React Query**: Efficient data fetching and caching
-- **React Testing Library**: Component testing framework
+
+-   **React 18**: Modern component-based UI framework
+-   **TypeScript**: Type-safe development experience
+-   **Vite**: Lightning-fast build tool and development server
+-   **Tailwind CSS**: Utility-first CSS framework
+-   **React Query**: Efficient data fetching and caching
+-   **React Testing Library**: Component testing framework
 
 ### DevOps & Infrastructure
-- **Docker**: Containerized development and deployment
-- **Docker Compose**: Multi-service orchestration with custom volumes
-- **Makefile**: Streamlined development workflow and automation
-- **PostgreSQL**: Dockerized database with initialization scripts
-- **Environment Configuration**: Flexible configuration management
+
+-   **Docker**: Containerized development and deployment
+-   **Docker Compose**: Multi-service orchestration with custom volumes
+-   **Makefile**: Streamlined development workflow and automation
+-   **PostgreSQL**: Dockerized database with initialization scripts
+-   **Environment Configuration**: Flexible configuration management
 
 ## 📁 Project Structure
 
@@ -83,129 +90,155 @@ red-tetris/
 └── Docker/                 # Container configurations
 ```
 
+# Team work 💪
+
+This project was a team effort. You can checkout the team members here:
+
+-   **Alejandro Díaz Ufano Pérez**
+    -   [Github](https://github.com/adiaz-uf)
+    -   [LinkedIn](https://www.linkedin.com/in/alejandro-d%C3%ADaz-35a996303/)
+    -   [42 intra](https://profile.intra.42.fr/users/adiaz-uf)
+-   **Alejandro Aparicio**
+    -   [Github](https://github.com/magnitopic)
+    -   [LinkedIn](https://www.linkedin.com/in/magnitopic/)
+    -   [42 intra](https://profile.intra.42.fr/users/alaparic)
+
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Docker & Docker Compose
-- Make (for simplified commands)
-- Node.js 18+ (for local development)
+
+-   Docker & Docker Compose
+-   Make (for simplified commands)
+-   Node.js 18+ (for local development)
 
 ### Quick Start with Make
 
 1. **Clone the repository**
-   ```bash
-   git clone https://github.com/magnitopic/red-tetris.git
-   cd red-tetris
-   ```
+
+    ```bash
+    git clone https://github.com/magnitopic/red-tetris.git
+    cd red-tetris
+    ```
 
 2. **Environment Setup**
-   ```bash
-   # Copy .env-example into .env
-   cp .env-example .env
-   # Edit .env with your credentials
-   ```
+
+    ```bash
+    # Copy .env-example into .env
+    cp .env-example .env
+    # Edit .env with your credentials
+    ```
 
 3. **Launch the complete application**
-   ```bash
-   make build    # Builds and starts all containers
-   # or simply
-   make         # Default target is build
-   ```
+
+    ```bash
+    make build    # Builds and starts all containers
+    # or simply
+    make         # Default target is build
+    ```
 
 4. **Access the application**
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:3001
-   - Database: localhost:5432
+    - Frontend: http://localhost:3000
+    - Backend API: http://localhost:3001
+    - Database: localhost:5432
 
 ### Available Make Commands
 
 #### **Container Management**
-- `make build` - Build and start all containers
-- `make restart` - Restart all containers
-- `make stop` - Stop all containers
-- `make down` - Stop and remove containers
-- `make fclean` - Complete cleanup (containers, images, node_modules)
+
+-   `make build` - Build and start all containers
+-   `make restart` - Restart all containers
+-   `make stop` - Stop all containers
+-   `make down` - Stop and remove containers
+-   `make fclean` - Complete cleanup (containers, images, node_modules)
 
 #### **Individual Services**
-- `make frontend` - Start only frontend container
-- `make backend` - Start only backend container
-- `make postgresql` - Start only database container
+
+-   `make frontend` - Start only frontend container
+-   `make backend` - Start only backend container
+-   `make postgresql` - Start only database container
 
 #### **Testing**
-- `make test-backend` - Run all backend tests
-- `make test-backend-cov` - Backend tests with coverage report
-- `make test-frontend` - Run all frontend tests
-- `make test-frontend-cov` - Frontend tests with coverage report
-- `make test-backend-file FILE=filename.test.js` - Run specific test file
+
+-   `make test-backend` - Run all backend tests
+-   `make test-backend-cov` - Backend tests with coverage report
+-   `make test-frontend` - Run all frontend tests
+-   `make test-frontend-cov` - Frontend tests with coverage report
+-   `make test-backend-file FILE=filename.test.js` - Run specific test file
 
 #### **Data Management**
-- `make remove_data` - Remove persistent data (uploads, database)
-- `make re` - Complete rebuild (fclean + build)
+
+-   `make remove_data` - Remove persistent data (uploads, database)
+-   `make re` - Complete rebuild (fclean + build)
 
 ### Local Development Setup
 
 For development without Docker:
 
 1. **Backend Development**
-   ```bash
-   cd Backend
-   npm install
-   npm run dev        # Development server with hot reload
-   make test-backend-cov  # Run tests using make
-   ```
+
+    ```bash
+    cd Backend
+    npm install
+    npm run dev        # Development server with hot reload
+    make test-backend-cov  # Run tests using make
+    ```
 
 2. **Frontend Development**
-   ```bash
-   cd Frontend
-   npm install
-   npm run dev       # Development server with hot reload
-   make test-frontend-cov # Run tests using make
-   ```
+    ```bash
+    cd Frontend
+    npm install
+    npm run dev       # Development server with hot reload
+    make test-frontend-cov # Run tests using make
+    ```
 
 ## 🎮 How to Play
 
 1. **Authentication**: Sign in using your preferred OAuth provider or by username-password
 2. **Create/Join Room**: Start a new game or join an existing room
 3. **Game Controls**:
-   - `←/→`: Move pieces left/right
-   - `↓`: Soft drop
-   - `Space`: Hard drop
-   - `↑`: Rotate piece
+    - `←/→`: Move pieces left/right
+    - `↓`: Soft drop
+    - `Space`: Hard drop
+    - `↑`: Rotate piece
 4. **Multiplayer**: Compete with other players in real-time
 5. **Spectate**: Watch other players ongoing games
 
 ## 🏗 Architecture Highlights
 
 ### Real-time Game Engine
-- **Deterministic Gameplay**: Seed-based random generation ensures fair play
-- **State Synchronization**: Efficient game state broadcasting
-- **Collision Detection**: Optimized piece placement validation
+
+-   **Deterministic Gameplay**: Seed-based random generation ensures fair play
+-   **State Synchronization**: Efficient game state broadcasting
+-   **Collision Detection**: Optimized piece placement validation
 
 ### Scalable Backend Architecture
-- **Modular Design**: Clean separation of concerns
-- **Middleware Pipeline**: Extensible request processing
-- **Database Abstraction**: Flexible data layer with transaction support
-- **Session Management**: Secure user session handling
+
+-   **Modular Design**: Clean separation of concerns
+-   **Middleware Pipeline**: Extensible request processing
+-   **Database Abstraction**: Flexible data layer with transaction support
+-   **Session Management**: Secure user session handling
 
 ### Modern Frontend Patterns
-- **Component Composition**: Reusable and testable UI components
-- **Custom Hooks**: Encapsulated business logic
-- **State Management**: Efficient global state handling
-- **Error Boundaries**: Graceful error handling and recovery
+
+-   **Component Composition**: Reusable and testable UI components
+-   **Custom Hooks**: Encapsulated business logic
+-   **State Management**: Efficient global state handling
+-   **Error Boundaries**: Graceful error handling and recovery
 
 ## 🧪 Testing & Quality
 
-- **Backend**: 70%+ test coverage with Jest
-- **Frontend**: Component and integration testing with React Testing Library
-- **Automated Testing**: Make commands for easy test execution
-- **Coverage Reports**: Detailed coverage analysis for both frontend and backend
-- **File-specific Testing**: Run individual test files for targeted debugging
-- **Code Quality**: ESLint, Prettier, and TypeScript enforcement
-- **CI/CD Ready**: Automated testing and deployment pipelines
+-   **Backend**: 70%+ test coverage with Jest
+-   **Frontend**: Component and integration testing with React Testing Library
+-   **Automated Testing**: Make commands for easy test execution
+-   **Coverage Reports**: Detailed coverage analysis for both frontend and backend
+-   **File-specific Testing**: Run individual test files for targeted debugging
+-   **Code Quality**: ESLint, Prettier, and TypeScript enforcement
+-   **CI/CD Ready**: Automated testing and deployment pipelines
 
 ## 🔧 Configuration
 
 ### OAuth Setup
+
 Configure your OAuth applications and add credentials to `.env`:
 
 ```env
@@ -221,6 +254,7 @@ GOOGLE_CLIENT_SECRET=your_google_client_secret
 ```
 
 ### Database Configuration
+
 ```env
 DB_HOST=localhost
 DB_PORT=5432
@@ -231,27 +265,40 @@ DB_PASS=your_db_password
 
 ## 📈 Performance Features
 
-- **WebSocket Optimization**: Efficient real-time communication
-- **Database Indexing**: Optimized query performance
-- **Caching Strategies**: Session and data caching
-- **Code Splitting**: Lazy-loaded frontend components
-- **Image Optimization**: Efficient asset delivery
-
+-   **WebSocket Optimization**: Efficient real-time communication
+-   **Database Indexing**: Optimized query performance
+-   **Caching Strategies**: Session and data caching
+-   **Code Splitting**: Lazy-loaded frontend components
+-   **Image Optimization**: Efficient asset delivery
 
 ## 🎯 Portfolio Highlights
 
 This project demonstrates:
 
-- **Full-Stack Development**: Complete CRUD operations with real-time features
-- **Modern JavaScript/TypeScript**: ES6+, async/await, modern React patterns
-- **Real-time Systems**: WebSocket implementation and state synchronization
-- **Database Design**: Relational database modeling and optimization
-- **Testing Excellence**: Comprehensive test coverage and quality assurance
-- **DevOps Skills**: Containerization, environment management, and deployment
-- **Build Automation**: Makefile-driven development workflow and CI/CD pipeline
-- **UI/UX Design**: Responsive design and user experience optimization
-- **Security Best Practices**: OAuth integration, JWT tokens, and secure sessions
+-   **Full-Stack Development**: Complete CRUD operations with real-time features
+-   **Modern JavaScript/TypeScript**: ES6+, async/await, modern React patterns
+-   **Real-time Systems**: WebSocket implementation and state synchronization
+-   **Database Design**: Relational database modeling and optimization
+-   **Testing Excellence**: Comprehensive test coverage and quality assurance
+-   **DevOps Skills**: Containerization, environment management, and deployment
+-   **Build Automation**: Makefile-driven development workflow and CI/CD pipeline
+-   **UI/UX Design**: Responsive design and user experience optimization
+-   **Security Best Practices**: OAuth integration, JWT tokens, and secure sessions
+
+# Project Gallery
+
+<img width="1920" height="1080" alt="Screenshot 2025-09-02 at 18-50-44 RedTetris" src="https://github.com/user-attachments/assets/d8e1acb1-684b-4384-b600-4b58d18bf22c" />
+
+\_Red-Tetris home screen
+
+<img width="1920" height="1080" alt="Screenshot 2025-09-02 at 18-07-05 RedTetris" src="https://github.com/user-attachments/assets/2e6375f8-7140-40a7-b810-bdab50aa31ec" />
+
+_Game screen with other player spectrums_
+
+<img width="1920" height="1080" alt="Screenshot 2025-09-02 at 18-23-33 RedTetris" src="https://github.com/user-attachments/assets/c2c0e6c3-e569-41e1-a0b8-fa8e8d53068a" />
+
+_Creating games, joining games and player ranking_
 
 ---
 
-**Made with ❤️ by alaparic & adiaz-uf** - *Showcasing modern web development skills*
+**Made with ❤️ by [alaparic](https://github.com/magnitopic) & [adiaz-uf](https://github.com/adiaz-uf)** - _Showcasing modern web development skills_
